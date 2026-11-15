@@ -44,6 +44,15 @@ function pageHref(params: SearchParams, page: number) {
   return "/?" + query.toString();
 }
 
+function exportHref(params: SearchParams, format: string) {
+  const query = new URLSearchParams({ format });
+  for (const [key, value] of Object.entries(params)) {
+    if (value && key !== "page" && key !== "page_size") query.set(key, value);
+  }
+  query.set("limit", "1000");
+  return "/api/exports?" + query.toString();
+}
+
 async function fetchResults(params: SearchParams): Promise<SearchResponse> {
   const query = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) {
@@ -92,7 +101,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<Sea
             <h2>{params.q ? "Results for “" + params.q + "”" : "Explore the collection"}</h2>
             <p className="muted">{data ? data.total.toLocaleString() + " records found" : "Search the harvested collection"}</p>
           </div>
-          <form action="/" className="sort-form">
+          <div className="toolbar-actions">
+            <form action="/" className="sort-form">
             {params.q && <input type="hidden" name="q" value={params.q} />}
             {params.repository_id && <input type="hidden" name="repository_id" value={params.repository_id} />}
             {params.resource_type && <input type="hidden" name="resource_type" value={params.resource_type} />}
@@ -104,8 +114,14 @@ export default async function Home({ searchParams }: { searchParams: Promise<Sea
               <option value="newest">Newest first</option>
               <option value="oldest">Oldest first</option>
             </select>
-            <button type="submit" className="secondary-button">Apply</button>
-          </form>
+              <button type="submit" className="secondary-button">Apply</button>
+            </form>
+            <div className="export-links">
+              <Link href={exportHref(params, "csv")}>Download CSV</Link>
+              <Link href={exportHref(params, "oai_dc")}>Dublin Core XML</Link>
+              <Link href={exportHref(params, "json")}>JSON</Link>
+            </div>
+          </div>
         </div>
 
         <div className="discovery-layout">
