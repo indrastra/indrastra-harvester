@@ -4,7 +4,10 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from backend.app.harvest.models import (
-    HarvestJob, HarvestJobLog, SourceRecord, SourceRecordVersion,
+    HarvestJob,
+    HarvestJobLog,
+    SourceRecord,
+    SourceRecordVersion,
 )
 
 
