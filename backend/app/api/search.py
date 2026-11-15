@@ -1,4 +1,4 @@
-from typing import Annotated, Literal
+from typing import Literal
 
 from fastapi import APIRouter, HTTPException, Query
 
