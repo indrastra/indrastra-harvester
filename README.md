@@ -27,14 +27,12 @@ The project collects, preserves, normalizes, indexes, and exposes scholarly meta
 14. Export normalized metadata as JSON, CSV, XML, and Dublin Core XML.
 15. Provide administrative collection and indexing analytics.
 16. Support JWT authentication, Argon2 password hashing, audit events, and admin/harvester/viewer roles.
-16. Support JWT authentication, Argon2 password hashing, audit events, and admin/harvester/viewer roles.
 
 ## Planned platform capabilities
 
 - Additional metadata crosswalks (Qualified Dublin Core, MODS, MARCXML, JATS).
 - Advanced discovery features including facets, saved searches, and discovery analytics.
 - MFA, SSO, password reset, token revocation, and fine-grained resource permissions.
-- Advanced schedule calendars and timezone-specific scheduling.
 - Advanced schedule calendars and timezone-specific scheduling.
 - Advanced analytics dashboards, scheduled reports, and public REST API expansion.
 
