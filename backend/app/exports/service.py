@@ -13,6 +13,23 @@ CSV_FIELDS = [
 
 DC_NAMESPACE = "http://purl.org/dc/elements/1.1/"
 OAI_DC_NAMESPACE = "http://www.openarchives.org/OAI/2.0/oai_dc/"
+OAI_DC_ELEMENTS = {
+    "title": "title",
+    "creators": "creator",
+    "contributors": "contributor",
+    "subjects": "subject",
+    "descriptions": "description",
+    "publishers": "publisher",
+    "publication_dates": "date",
+    "resource_types": "type",
+    "formats": "format",
+    "identifiers": "identifier",
+    "languages": "language",
+    "relations": "relation",
+    "sources": "source",
+    "rights": "rights",
+    "coverages": "coverage",
+}
 ET.register_namespace("dc", DC_NAMESPACE)
 ET.register_namespace("oai_dc", OAI_DC_NAMESPACE)
 
@@ -48,16 +65,12 @@ def serialize_xml(records: list[dict[str, Any]], *, oai_dc: bool = False) -> str
         metadata = record.get("metadata", {})
         if oai_dc:
             dc_root = ET.SubElement(node, f"{{{OAI_DC_NAMESPACE}}}dc")
-            for key in (
-                "title", "creators", "contributors", "subjects", "descriptions",
-                "publishers", "publication_dates", "resource_types", "formats",
-                "identifiers", "languages", "relations", "sources", "rights", "coverages",
-            ):
+            for key, element_name in OAI_DC_ELEMENTS.items():
                 values = metadata.get(key, [])
                 if not isinstance(values, list):
                     values = [values]
                 for value in values:
-                    element = ET.SubElement(dc_root, f"{{{DC_NAMESPACE}}}{key.rstrip('s')}")
+                    element = ET.SubElement(dc_root, f"{{{DC_NAMESPACE}}}{element_name}")
                     element.text = str(value)
         else:
             metadata_node = ET.SubElement(node, "metadata")
