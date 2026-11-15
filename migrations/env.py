@@ -2,11 +2,13 @@ from logging.config import fileConfig
 import os
 
 from alembic import context
+from dotenv import load_dotenv
 from sqlalchemy import engine_from_config, pool
 
 from backend.app.db.base import Base
 from backend.app.repositories.models import Repository  # noqa: F401
 
+load_dotenv()
 config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)

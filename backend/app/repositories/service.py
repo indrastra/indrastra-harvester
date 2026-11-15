@@ -21,10 +21,7 @@ class RepositoryValidationError(ValueError):
 def validate_repository_endpoint(endpoint: str) -> dict:
     """Validate the public endpoint and discover basic OAI-PMH capabilities."""
     safe_endpoint = validate_public_http_endpoint(endpoint)
-
-    # Re-check immediately before the protocol client is constructed. Deployments
-    # must still enforce egress restrictions outside the application to close
-    # the DNS-resolution/connect race.
+    # The deployment egress firewall/proxy must also enforce the destination policy.
     validate_public_http_endpoint(safe_endpoint)
 
     try:
@@ -40,7 +37,6 @@ def validate_repository_endpoint(endpoint: str) -> dict:
 
             formats: list[dict[str, str]] = []
             sets: list[dict[str, str]] = []
-
             try:
                 format_response = client.list_metadata_formats()
                 format_root = format_response.root.find("oai:ListMetadataFormats", NS)
@@ -52,8 +48,6 @@ def validate_repository_endpoint(endpoint: str) -> dict:
                             "metadata_namespace": _child_text(item, "metadataNamespace"),
                         })
             except OAIError:
-                # Identify success is sufficient for registration; capabilities
-                # can be refreshed later and the missing formats remain visible.
                 formats = []
 
             try:
@@ -83,15 +77,15 @@ def validate_repository_endpoint(endpoint: str) -> dict:
 
 
 def create_repository(db: Session, values: dict) -> Repository:
-    endpoint = validate_public_http_endpoint(values["endpoint"])
+    values = dict(values)
+    endpoint = validate_public_http_endpoint(values.pop("endpoint"))
+    validate_endpoint = values.pop("validate_endpoint", True)
+
     existing = db.scalar(select(Repository).where(Repository.endpoint == endpoint))
     if existing:
         raise RepositoryAlreadyExistsError("A repository with this endpoint already exists.")
 
-    validation = {}
-    if values.pop("validate_endpoint", True):
-        validation = validate_repository_endpoint(endpoint)
-
+    validation = validate_repository_endpoint(endpoint) if validate_endpoint else {}
     repository = Repository(
         **values,
         endpoint=endpoint,
@@ -131,6 +125,5 @@ def refresh_repository_validation(db: Session, repository: Repository) -> Reposi
 
 
 def _child_text(parent, tag: str) -> str:
-    from backend.app.harvest.oai_client import NS
     node = parent.find(f"oai:{tag}", NS)
     return (node.text or "").strip() if node is not None else ""
