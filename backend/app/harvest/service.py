@@ -1,3 +1,5 @@
+from datetime import UTC, datetime
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -17,12 +19,14 @@ def upsert_source_record(
         SourceRecord.repository_id == repository_id,
         SourceRecord.oai_identifier == identifier,
     ))
+    now = datetime.now(UTC)
     if record is None:
         db.add(SourceRecord(
             repository_id=repository_id, oai_identifier=identifier, datestamp=datestamp,
             set_specs="\n".join(set_specs), metadata_prefix=metadata_prefix,
             original_xml=original_xml, is_deleted=deleted,
             source_status="deleted" if deleted else "active",
+            last_harvested_at=now, updated_at=now,
         ))
         return "created"
     changed = (
@@ -35,6 +39,8 @@ def upsert_source_record(
     record.original_xml = original_xml
     record.is_deleted = deleted
     record.source_status = "deleted" if deleted else "active"
+    record.last_harvested_at = now
+    record.updated_at = now
     if changed:
         return "updated"
     return "unchanged"
