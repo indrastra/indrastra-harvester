@@ -19,28 +19,38 @@
 - Retries, timeouts, rate limits, and job lifecycle.
 
 ## Stage 3 — Metadata pipeline
-- oai_dc parser and normalized schema.
-- Original XML preservation.
-- Validation and provenance.
-- Idempotent upsert and deletion tombstones.
-- Additional crosswalks.
+- OAI Dublin Core and initial DataCite crosswalks.
+- Generic XML field preservation for unknown metadata prefixes.
+- Versioned normalized schema and raw field map.
+- Original XML preservation and immutable source record versions.
+- Validation, provenance, and deletion propagation.
+- Additional crosswalks: Qualified Dublin Core, MODS, MARCXML, and JATS.
 
 ## Stage 4 — Search and discovery
-- OpenSearch mappings and indexing.
-- Search API and facets.
-- Public discovery frontend and record pages.
+- Initial OpenSearch mapping and asynchronous indexing outbox.
+- Public search API with text, repository, resource-type, and year filters.
+- Relevance and publication-year sorting.
+- Initial Next.js public search and record detail pages.
+- Facets, advanced discovery, and index rebuild tooling.
 
-## Stage 5 — Administration
-- Authentication and RBAC.
-- Repository and job dashboards.
-- Logs, metrics, exports, and audit events.
+## Stage 5 — Administration and operations
+- Shared-token operator console for repository, harvest, schedule, and indexing operations.
+- Persistent hourly/daily/weekly schedules with Celery Beat and incremental date windows.
+- Administrative collection metrics and index-outbox monitoring.
+- JWT user accounts, Argon2 password hashing, admin/harvester/viewer roles, account lockout, and audit events.
 
-## Stage 6 — Release hardening
+## Stage 6 — Exports and analytics
+- Public JSON, CSV, canonical XML, and OAI Dublin Core XML metadata exports.
+- Administrative operational summary for repository, record, job, schedule, and indexing status.
+- Advanced facets, trend analytics, scheduled reports, and bibliometric analytics remain future work.
+
+## Stage 7 — Release hardening
 - Security review and dependency audit.
 - Backup/restore and upgrade documentation.
 - Performance testing with representative repositories.
 - Accessibility review.
 - Release packaging and documentation.
+- MFA, SSO, password reset, token revocation, and fine-grained permission policies.
 
 ## Release gates
 

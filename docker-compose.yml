@@ -1,23 +1,4 @@
 services:
-  api:
-    build: .
-    env_file: .env
-    ports:
-      - "8000:8000"
-    depends_on:
-      - db
-      - redis
-    restart: unless-stopped
-
-  worker:
-    build: .
-    command: ["celery", "-A", "backend.app.worker.celery_app", "worker", "--loglevel=INFO"]
-    env_file: .env
-    depends_on:
-      - db
-      - redis
-    restart: unless-stopped
-
   db:
     image: postgres:16
     environment:
@@ -38,6 +19,67 @@ services:
     command: ["redis-server", "--appendonly", "yes"]
     volumes:
       - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  migrate:
+    build: .
+    command: ["alembic", "upgrade", "head"]
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    build: .
+    env_file: .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  worker:
+    build: .
+    command: ["celery", "-A", "backend.app.worker.celery_app", "worker", "--loglevel=INFO"]
+    env_file: .env
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  scheduler:
+    build: .
+    command: ["celery", "-A", "backend.app.worker.celery_app", "beat", "--loglevel=INFO"]
+    env_file: .env
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+    environment:
+      HARVESTER_API_URL: http://api:8000/api/v1
+      NEXT_TELEMETRY_DISABLED: "1"
+    ports:
+      - "3000:3000"
+    depends_on:
+      api:
+        condition: service_started
     restart: unless-stopped
 
   opensearch:
@@ -50,6 +92,11 @@ services:
       - "9200:9200"
     volumes:
       - opensearch_data:/usr/share/opensearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:9200/_cluster/health >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 20
     restart: unless-stopped
 
 volumes:
