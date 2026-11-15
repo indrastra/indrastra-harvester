@@ -122,3 +122,34 @@ def test_harvest_schedule_can_be_created_listed_and_disabled():
     )
     assert disabled.status_code == 200
     assert disabled.json()["enabled"] is False
+
+
+def test_analytics_summary_requires_admin_and_returns_collection_metrics():
+    unauthorized = client.get("/api/v1/analytics/summary")
+    assert unauthorized.status_code == 401
+    response = client.get("/api/v1/analytics/summary", headers=admin_headers())
+    assert response.status_code == 200
+    payload = response.json()
+    assert "repositories" in payload
+    assert "records" in payload
+    assert "harvest_jobs" in payload
+    assert "index_outbox" in payload
+
+
+def test_public_csv_export_returns_download_response(monkeypatch):
+    from unittest.mock import MagicMock
+
+    fake_client = MagicMock()
+    fake_client.indices.exists.return_value = True
+    fake_client.search.return_value = {
+        "hits": {"total": {"value": 0}, "hits": []}
+    }
+    monkeypatch.setattr(
+        "backend.app.api.exports.get_opensearch_client",
+        lambda: fake_client,
+    )
+    response = client.get("/api/v1/exports?format=csv")
+    assert response.status_code == 200
+    assert "text/csv" in response.headers["content-type"]
+    assert response.headers["x-exported-records"] == "0"
+    assert "attachment" in response.headers["content-disposition"]
