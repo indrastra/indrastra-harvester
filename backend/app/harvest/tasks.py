@@ -42,7 +42,8 @@ def run_harvest(self, job_id: int) -> dict[str, int | str]:
             text("SELECT pg_try_advisory_lock(:key)"), {"key": lock_key}
         ).scalar())
         if not locked:
-            return {"job_id": job_id, "status": "already_running"}
+            # Keep a distinct queued job alive until the repository lock is released.
+            raise self.retry(countdown=15, max_retries=20)
 
         db.refresh(job)
         if job.status == "completed":
@@ -128,8 +129,14 @@ def run_harvest(self, job_id: int) -> dict[str, int | str]:
             db.commit()
             raise
         except OAITransportError as exc:
-            job.status = "queued"
             job.error_message = str(exc)[:4000]
+            if self.request.retries >= 3:
+                job.status = "failed"
+                job.finished_at = datetime.now(UTC)
+                log_job(db, job.id, f"Transport retries exhausted: {exc}", "ERROR")
+                db.commit()
+                raise
+            job.status = "queued"
             log_job(db, job.id, f"Transient transport failure; retry scheduled: {exc}", "WARNING")
             db.commit()
             raise self.retry(
