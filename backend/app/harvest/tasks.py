@@ -11,6 +11,8 @@ from backend.app.harvest.oai_client import NS, OAIPMHClient
 from backend.app.harvest.service import log_job, upsert_source_record
 from backend.app.metadata.service import normalize_source_record
 from backend.app.repositories.models import Repository
+from backend.app.search.models import IndexOutbox
+from backend.app.search.tasks import process_index_outbox
 from backend.app.worker import celery_app
 
 
@@ -76,6 +78,7 @@ def run_harvest(self, job_id: int) -> dict[str, int | str]:
                     if container is None:
                         raise ValueError("OAI-PMH ListRecords response is missing ListRecords.")
                     counts = {"seen": 0, "created": 0, "updated": 0, "deleted": 0}
+                    index_event_ids: list[int] = []
                     for item in container.findall("oai:record", NS):
                         header = item.find("oai:header", NS)
                         if header is None:
@@ -100,6 +103,17 @@ def run_harvest(self, job_id: int) -> dict[str, int | str]:
                         ))
                         if source_record is not None and outcome != "unchanged":
                             normalize_source_record(db, source_record)
+                            db.flush()
+                            outbox_event = db.scalar(
+                                select(IndexOutbox)
+                                .where(
+                                    IndexOutbox.source_record_id == source_record.id,
+                                    IndexOutbox.status == "pending",
+                                )
+                                .order_by(IndexOutbox.id.desc())
+                            )
+                            if outbox_event is not None:
+                                index_event_ids.append(outbox_event.id)
                         counts["seen"] += 1
                         if outcome == "created":
                             counts["created"] += 1
@@ -117,6 +131,16 @@ def run_harvest(self, job_id: int) -> dict[str, int | str]:
                     job.pages_completed += 1
                     job.resumption_token = next_token or None
                     log_job(db, job.id, f"Page {job.pages_completed}: {counts['seen']} records processed.")
+                    db.commit()
+                    for event_id in index_event_ids:
+                        try:
+                            process_index_outbox.delay(event_id)
+                        except Exception as exc:
+                            log_job(
+                                db, job.id,
+                                f"Search indexing event {event_id} remains pending: {exc}",
+                                "WARNING",
+                            )
                     db.commit()
                     if not next_token:
                         break
