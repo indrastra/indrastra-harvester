@@ -25,7 +25,8 @@ The project collects, preserves, normalizes, indexes, and exposes scholarly meta
 12. Provide a token-protected operator console for repository and harvest management.
 13. Schedule hourly, daily, and weekly incremental harvests using Celery Beat.
 14. Export normalized metadata as JSON, CSV, XML, and Dublin Core XML.
-15. Provide administrative collection and indexing analytics.\n16. Support JWT authentication, Argon2 password hashing, audit events, and admin/harvester/viewer roles.
+15. Provide administrative collection and indexing analytics.
+16. Support JWT authentication, Argon2 password hashing, audit events, and admin/harvester/viewer roles.
 
 ## Planned platform capabilities
 
@@ -65,7 +66,20 @@ deploy/        Deployment guidance
 
 Protected endpoints require an HTTP bearer token. Administrators can use the bootstrap `ADMIN_API_TOKEN` (minimum 32 characters) or sign in with a user account to obtain a short-lived JWT. Configure `JWT_SECRET_KEY` with at least 32 random characters. See [Authentication and RBAC](docs/AUTHENTICATION.md).
 
-### Authentication and user administration\n\n| Method | Endpoint | Purpose |\n|---|---|---|\n| POST | `/api/v1/auth/token` | Exchange email/password for a JWT |\n| GET | `/api/v1/auth/me` | Inspect current account |\n| POST | `/api/v1/auth/users` | Create a user (admin) |\n| GET | `/api/v1/auth/users` | List users (admin) |\n| PATCH | `/api/v1/auth/users/{id}/roles` | Change roles (admin) |\n| PATCH | `/api/v1/auth/users/{id}/active` | Activate/deactivate account (admin) |\n\nSee [Authentication and RBAC](docs/AUTHENTICATION.md) for role permissions and security limits.\n\n### Repository registry
+### Authentication and user administration
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| POST | `/api/v1/auth/token` | Exchange email/password for a JWT |
+| GET | `/api/v1/auth/me` | Inspect current account |
+| POST | `/api/v1/auth/users` | Create a user (admin) |
+| GET | `/api/v1/auth/users` | List users (admin) |
+| PATCH | `/api/v1/auth/users/{id}/roles` | Change roles (admin) |
+| PATCH | `/api/v1/auth/users/{id}/active` | Activate/deactivate account (admin) |
+
+See [Authentication and RBAC](docs/AUTHENTICATION.md) for role permissions and security limits.
+
+### Repository registry
 
 Base path: `/api/v1/repositories`
 
