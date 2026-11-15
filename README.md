@@ -25,16 +25,16 @@ The project collects, preserves, normalizes, indexes, and exposes scholarly meta
 12. Provide a token-protected operator console for repository and harvest management.
 13. Schedule hourly, daily, and weekly incremental harvests using Celery Beat.
 14. Export normalized metadata as JSON, CSV, XML, and Dublin Core XML.
-15. Provide administrative collection and indexing analytics.
+15. Provide administrative collection and indexing analytics.\n16. Support JWT authentication, Argon2 password hashing, audit events, and admin/harvester/viewer roles.
 
 ## Planned platform capabilities
 
 - Additional metadata crosswalks (Qualified Dublin Core, MODS, MARCXML, JATS).
 - Advanced discovery features including facets, saved searches, and discovery analytics.
-- Repository and user administration with role-based access.
+- MFA, SSO, password reset, and fine-grained resource permissions.
 - Advanced schedule calendars and timezone-specific scheduling.
-- Export to JSON, CSV, XML, and Dublin Core.
-- Analytics, monitoring, and public REST API.
+- Advanced schedule calendars and timezone-specific scheduling.
+- Advanced analytics dashboards, scheduled reports, and public REST API expansion.
 
 ## Technology stack
 
@@ -63,9 +63,9 @@ deploy/        Deployment guidance
 
 ## API
 
-All administrative endpoints require an HTTP bearer token configured as `ADMIN_API_TOKEN` (minimum 32 characters). If the token is not configured, administrative operations fail closed with HTTP 503. A complete user and role management system is planned for a later milestone.
+Protected endpoints require an HTTP bearer token. Administrators can use the bootstrap `ADMIN_API_TOKEN` (minimum 32 characters) or sign in with a user account to obtain a short-lived JWT. Configure `JWT_SECRET_KEY` with at least 32 random characters. See [Authentication and RBAC](docs/AUTHENTICATION.md).
 
-### Repository registry
+### Authentication and user administration\n\n| Method | Endpoint | Purpose |\n|---|---|---|\n| POST | `/api/v1/auth/token` | Exchange email/password for a JWT |\n| GET | `/api/v1/auth/me` | Inspect current account |\n| POST | `/api/v1/auth/users` | Create a user (admin) |\n| GET | `/api/v1/auth/users` | List users (admin) |\n| PATCH | `/api/v1/auth/users/{id}/roles` | Change roles (admin) |\n| PATCH | `/api/v1/auth/users/{id}/active` | Activate/deactivate account (admin) |\n\nSee [Authentication and RBAC](docs/AUTHENTICATION.md) for role permissions and security limits.\n\n### Repository registry
 
 Base path: `/api/v1/repositories`
 
@@ -94,7 +94,7 @@ Public exports are available at `/api/v1/exports` in JSON, CSV, XML, and OAI Dub
 
 ### Scheduled harvesting
 
-See [Scheduled harvesting](docs/SCHEDULING.md) for recurring schedule configuration and UTC semantics. All schedule endpoints require the administrative bearer token.
+See [Scheduled harvesting](docs/SCHEDULING.md) for recurring schedule configuration and UTC semantics. Schedule creation and management require an admin or harvester role.
 
 ### Harvest jobs
 
@@ -141,9 +141,9 @@ The Compose environment is intended for local development. Review [SECURITY.md](
 
 ## Development status
 
-The repository contains the OAI-PMH client, repository registry, persistent harvesting engine, immutable source-record history, OAI Dublin Core/DataCite normalization, OpenSearch-backed search API with durable indexing outbox, and a Next.js public discovery portal with record detail pages. Individual user accounts, role-based permissions, index rebuild tooling, advanced schedule calendars, exports, analytics, and production security/operational validation remain under development.
+The repository contains the OAI-PMH client, repository registry, persistent harvesting engine, immutable source-record history, OAI Dublin Core/DataCite normalization, OpenSearch-backed search API with durable indexing outbox, and a Next.js public discovery portal with record detail pages. MFA, SSO, password reset, fine-grained resource permissions, index rebuild tooling, advanced schedule calendars, richer analytics, and production security/operational validation remain under development.
 
-See [Technical specification](docs/TECHNICAL_SPECIFICATION.md), [Architecture](docs/ARCHITECTURE.md), [Roadmap](docs/ROADMAP.md), [Search indexing](docs/SEARCH_INDEXING.md), [Frontend](docs/FRONTEND.md), [Administration](docs/ADMINISTRATION.md), [Security policy](SECURITY.md), and [Contributing guide](CONTRIBUTING.md).
+See [Technical specification](docs/TECHNICAL_SPECIFICATION.md), [Architecture](docs/ARCHITECTURE.md), [Roadmap](docs/ROADMAP.md), [Search indexing](docs/SEARCH_INDEXING.md), [Frontend](docs/FRONTEND.md), [Administration](docs/ADMINISTRATION.md), [Authentication and RBAC](docs/AUTHENTICATION.md), [Security policy](SECURITY.md), and [Contributing guide](CONTRIBUTING.md).
 
 ## License
 
