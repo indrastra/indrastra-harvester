@@ -8,7 +8,7 @@ CSV_FIELDS = [
     "id", "repository_id", "repository_name", "oai_identifier", "metadata_prefix",
     "title", "creators", "contributors", "subjects", "descriptions", "publishers",
     "publication_dates", "resource_types", "formats", "identifiers", "languages",
-    "relations", "rights", "coverages",
+    "relations", "sources", "rights", "coverages",
 ]
 
 DC_NAMESPACE = "http://purl.org/dc/elements/1.1/"
@@ -75,6 +75,8 @@ def serialize_xml(records: list[dict[str, Any]], *, oai_dc: bool = False) -> str
         else:
             metadata_node = ET.SubElement(node, "metadata")
             for key, values in metadata.items():
+                if key == "raw_fields":
+                    continue
                 if not isinstance(values, list):
                     values = [values]
                 for value in values:
