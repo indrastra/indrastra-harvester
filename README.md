@@ -131,7 +131,7 @@ The Compose environment is intended for local development. Review [SECURITY.md](
 
 The repository contains the OAI-PMH client, repository registry, persistent harvesting engine, immutable source-record history, OAI Dublin Core/DataCite normalization, OpenSearch-backed search API with durable indexing outbox, and a Next.js public discovery portal with record detail pages. Administrative UI, index rebuild tooling, user administration, scheduled harvest policies, and production security/operational validation remain under development.
 
-See [Technical specification](docs/TECHNICAL_SPECIFICATION.md), [Architecture](docs/ARCHITECTURE.md), [Roadmap](docs/ROADMAP.md), [Security policy](SECURITY.md), and [Contributing guide](CONTRIBUTING.md).
+See [Technical specification](docs/TECHNICAL_SPECIFICATION.md), [Architecture](docs/ARCHITECTURE.md), [Roadmap](docs/ROADMAP.md), [Search indexing](docs/SEARCH_INDEXING.md), [Frontend](docs/FRONTEND.md), [Security policy](SECURITY.md), and [Contributing guide](CONTRIBUTING.md).
 
 ## License
 
