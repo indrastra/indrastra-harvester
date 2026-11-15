@@ -4,8 +4,11 @@ import time
 import uuid
 
 from fastapi import FastAPI, HTTPException, Request
+from opensearchpy.exceptions import TransportError
 from redis import Redis
+from redis.exceptions import RedisError
 from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
 
 from backend.app.api.analytics import router as analytics_router
 from backend.app.api.audit_events import router as audit_events_router
@@ -78,28 +81,30 @@ def readiness() -> dict[str, object]:
         with SessionLocal() as db:
             db.execute(text("SELECT 1"))
         checks["database"] = "ok"
-    except Exception:
+    except SQLAlchemyError:
         checks["database"] = "unavailable"
 
-    redis_client = Redis.from_url(
-        os.getenv("REDIS_URL", "redis://localhost:6379/0"),
-        socket_connect_timeout=2,
-        socket_timeout=2,
-    )
+    redis_client = None
     try:
+        redis_client = Redis.from_url(
+            os.getenv("REDIS_URL", "redis://localhost:6379/0"),
+            socket_connect_timeout=2,
+            socket_timeout=2,
+        )
         redis_client.ping()
         checks["redis"] = "ok"
-    except Exception:
+    except RedisError:
         checks["redis"] = "unavailable"
     finally:
-        redis_client.close()
+        if redis_client is not None:
+            redis_client.close()
 
     search_client = None
     try:
         search_client = get_opensearch_client()
         search_client.cluster.health(request_timeout=3)
         checks["opensearch"] = "ok"
-    except Exception:
+    except (TransportError, ValueError):
         checks["opensearch"] = "unavailable"
     finally:
         if search_client is not None:
