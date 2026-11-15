@@ -11,6 +11,18 @@ type Repository = {
   metadata_formats?: { metadata_prefix?: string }[];
 };
 
+type Schedule = {
+  id: number;
+  repository_id: number;
+  metadata_prefix: string;
+  set_spec?: string | null;
+  frequency: string;
+  enabled: boolean;
+  next_run_at: string;
+  last_success_at?: string | null;
+  last_error?: string | null;
+};
+
 type HarvestJob = {
   id: number;
   repository_id: number;
@@ -51,6 +63,8 @@ export default function AdminConsole() {
   const [connected, setConnected] = useState(false);
   const [repositories, setRepositories] = useState<Repository[]>([]);
   const [jobs, setJobs] = useState<HarvestJob[]>([]);
+  const [schedules, setSchedules] = useState<Schedule[]>([]);
+  const [frequency, setFrequency] = useState("daily");
   const [name, setName] = useState("");
   const [endpoint, setEndpoint] = useState("");
   const [description, setDescription] = useState("");
@@ -64,12 +78,14 @@ export default function AdminConsole() {
   const [error, setError] = useState("");
 
   async function refreshData() {
-    const [repoData, jobData] = await Promise.all([
+    const [repoData, jobData, scheduleData] = await Promise.all([
       requestApi<Repository[]>(token, "repositories"),
       requestApi<HarvestJob[]>(token, "harvests?limit=50"),
+      requestApi<Schedule[]>(token, "schedules"),
     ]);
     setRepositories(repoData);
     setJobs(jobData);
+    setSchedules(scheduleData);
     if (!repositoryId && repoData.length) setRepositoryId(String(repoData[0].id));
   }
 
@@ -148,6 +164,62 @@ export default function AdminConsole() {
       setMessage("Harvest job queued.");
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Could not queue harvest.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function createSchedule(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!repositoryId) return;
+    setBusy(true);
+    setError("");
+    setMessage("");
+    const body: Record<string, unknown> = {
+      repository_id: Number(repositoryId),
+      metadata_prefix: metadataPrefix,
+      frequency,
+    };
+    if (setSpec) body.set_spec = setSpec;
+    try {
+      await requestApi<Schedule>(token, "schedules", "POST", body);
+      await refreshData();
+      setMessage("Recurring harvest schedule created.");
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Could not create schedule.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function toggleSchedule(schedule: Schedule) {
+    setBusy(true);
+    setError("");
+    try {
+      await requestApi<Schedule>(
+        token,
+        "schedules/" + schedule.id,
+        "PATCH",
+        { enabled: !schedule.enabled },
+      );
+      await refreshData();
+      setMessage(schedule.enabled ? "Schedule disabled." : "Schedule enabled.");
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Could not update schedule.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function runScheduleNow(schedule: Schedule) {
+    setBusy(true);
+    setError("");
+    try {
+      await requestApi<Schedule>(token, "schedules/" + schedule.id + "/run-now", "POST", {});
+      await refreshData();
+      setMessage("Schedule marked for its next run.");
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Could not trigger schedule.");
     } finally {
       setBusy(false);
     }
@@ -280,6 +352,59 @@ export default function AdminConsole() {
                     </tr>
                   ))}
                   {!repositories.length && <tr><td colSpan={5}>No repositories registered yet.</td></tr>}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section className="admin-panel admin-table-panel">
+            <div className="admin-section-heading compact">
+              <div><h3>Recurring harvest schedules</h3><p>{schedules.length} schedules · UTC</p></div>
+            </div>
+            <form className="admin-schedule-form" onSubmit={createSchedule}>
+              <div>
+                <label htmlFor="schedule-repository">Repository</label>
+                <select id="schedule-repository" value={repositoryId} onChange={(event) => setRepositoryId(event.target.value)} required>
+                  {repositories.map((repository) => <option key={repository.id} value={repository.id}>{repository.name} (#{repository.id})</option>)}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="schedule-prefix">Metadata prefix</label>
+                <input id="schedule-prefix" value={metadataPrefix} onChange={(event) => setMetadataPrefix(event.target.value)} required />
+              </div>
+              <div>
+                <label htmlFor="schedule-frequency">Frequency</label>
+                <select id="schedule-frequency" value={frequency} onChange={(event) => setFrequency(event.target.value)}>
+                  <option value="hourly">Hourly</option>
+                  <option value="daily">Daily</option>
+                  <option value="weekly">Weekly</option>
+                </select>
+              </div>
+              <div>
+                <label htmlFor="schedule-set">Set specification</label>
+                <input id="schedule-set" value={setSpec} onChange={(event) => setSetSpec(event.target.value)} />
+              </div>
+              <button type="submit" disabled={busy || !repositories.length}>Create schedule</button>
+            </form>
+            <div className="admin-table-wrap">
+              <table className="admin-table">
+                <thead><tr><th>Schedule</th><th>Frequency</th><th>Next run (UTC)</th><th>Last success</th><th>State</th><th>Actions</th></tr></thead>
+                <tbody>
+                  {schedules.map((schedule) => (
+                    <tr key={schedule.id}>
+                      <td>#{schedule.id}<small>Repository #{schedule.repository_id} · {schedule.metadata_prefix}</small></td>
+                      <td>{schedule.frequency}</td>
+                      <td>{new Date(schedule.next_run_at).toLocaleString()}</td>
+                      <td>{schedule.last_success_at ? new Date(schedule.last_success_at).toLocaleString() : "Not run yet"}</td>
+                      <td><span className={"status-pill " + (schedule.enabled ? "status-valid" : "status-failed")}>{schedule.enabled ? "Enabled" : "Disabled"}</span></td>
+                      <td>
+                        <button type="button" className="table-action" disabled={busy || !schedule.enabled} onClick={() => runScheduleNow(schedule)}>Run now</button>
+                        {" "}
+                        <button type="button" className="table-action" disabled={busy} onClick={() => toggleSchedule(schedule)}>{schedule.enabled ? "Disable" : "Enable"}</button>
+                      </td>
+                    </tr>
+                  ))}
+                  {!schedules.length && <tr><td colSpan={6}>No recurring schedules created.</td></tr>}
                 </tbody>
               </table>
             </div>
