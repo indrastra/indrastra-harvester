@@ -2,6 +2,7 @@ from datetime import UTC, datetime
 from xml.etree import ElementTree as ET
 
 from celery.exceptions import SoftTimeLimitExceeded
+from kombu.exceptions import OperationalError
 from sqlalchemy import select, text
 
 from backend.app.db.session import SessionLocal
@@ -133,7 +134,7 @@ def run_harvest(self, job_id: int) -> dict[str, int | str]:
                     for event_id in index_event_ids:
                         try:
                             process_index_outbox.delay(event_id)
-                        except Exception as exc:
+                        except OperationalError as exc:
                             log_job(
                                 db, job.id,
                                 f"Search indexing event {event_id} remains pending: {exc}",
