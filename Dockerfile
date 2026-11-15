@@ -10,7 +10,12 @@ COPY pyproject.toml README.md alembic.ini ./
 COPY backend ./backend
 COPY migrations ./migrations
 
-RUN pip install --upgrade pip && pip install .
+RUN pip install --upgrade pip && pip install . \
+    && groupadd --system appuser \
+    && useradd --system --gid appuser --home-dir /app appuser \
+    && chown -R appuser:appuser /app
+
+USER appuser
 
 EXPOSE 8000
 
