@@ -23,6 +23,14 @@ type Schedule = {
   last_error?: string | null;
 };
 
+type Analytics = {
+  repositories: { total: number; enabled: number; disabled: number };
+  records: { source_total: number; active: number; deleted: number; normalized_active: number; harvested_last_30_days: number };
+  harvest_jobs: Record<string, number>;
+  schedules_enabled: number;
+  index_outbox: { pending: number; failed: number };
+};
+
 type HarvestJob = {
   id: number;
   repository_id: number;
@@ -64,6 +72,7 @@ export default function AdminConsole() {
   const [repositories, setRepositories] = useState<Repository[]>([]);
   const [jobs, setJobs] = useState<HarvestJob[]>([]);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
+  const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [frequency, setFrequency] = useState("daily");
   const [name, setName] = useState("");
   const [endpoint, setEndpoint] = useState("");
@@ -78,14 +87,16 @@ export default function AdminConsole() {
   const [error, setError] = useState("");
 
   async function refreshData() {
-    const [repoData, jobData, scheduleData] = await Promise.all([
+    const [repoData, jobData, scheduleData, analyticsData] = await Promise.all([
       requestApi<Repository[]>(token, "repositories"),
       requestApi<HarvestJob[]>(token, "harvests?limit=50"),
       requestApi<Schedule[]>(token, "schedules"),
+      requestApi<Analytics>(token, "analytics/summary"),
     ]);
     setRepositories(repoData);
     setJobs(jobData);
     setSchedules(scheduleData);
+    setAnalytics(analyticsData);
     if (!repositoryId && repoData.length) setRepositoryId(String(repoData[0].id));
   }
 
@@ -290,6 +301,14 @@ export default function AdminConsole() {
 
       {connected && (
         <>
+          {analytics && (
+            <section className="analytics-grid" aria-label="Collection analytics">
+              <div className="analytics-card"><span>Enabled repositories</span><strong>{analytics.repositories.enabled}</strong><small>{analytics.repositories.total} registered total</small></div>
+              <div className="analytics-card"><span>Active source records</span><strong>{analytics.records.active.toLocaleString()}</strong><small>{analytics.records.harvested_last_30_days.toLocaleString()} touched in 30 days</small></div>
+              <div className="analytics-card"><span>Normalized records</span><strong>{analytics.records.normalized_active.toLocaleString()}</strong><small>{analytics.records.deleted.toLocaleString()} source tombstones</small></div>
+              <div className="analytics-card"><span>Pending index events</span><strong>{analytics.index_outbox.pending.toLocaleString()}</strong><small>{analytics.index_outbox.failed.toLocaleString()} failed events</small></div>
+            </section>
+          )}
           <div className="admin-section-heading">
             <div>
               <p className="eyebrow dark">Repository management</p>
