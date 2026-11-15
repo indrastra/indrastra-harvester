@@ -7,11 +7,13 @@ from sqlalchemy import engine_from_config, pool
 
 from backend.app.db.base import Base
 from backend.app.harvest.models import (  # noqa: F401
-    HarvestJob, HarvestJobLog, SourceRecord, SourceRecordVersion,
+    HarvestJob,
+    HarvestJobLog,
+    SourceRecord,
+    SourceRecordVersion,
 )
 from backend.app.metadata.models import NormalizedRecord  # noqa: F401
 from backend.app.repositories.models import Repository  # noqa: F401
-from backend.app.search.models import IndexOutbox  # noqa: F401
 from backend.app.search.models import IndexOutbox  # noqa: F401
 
 load_dotenv()
