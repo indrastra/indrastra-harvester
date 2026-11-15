@@ -37,7 +37,7 @@
 - Shared-token operator console for repository, harvest, schedule, and indexing operations.
 - Persistent hourly/daily/weekly schedules with Celery Beat and incremental date windows.
 - Administrative collection metrics and index-outbox monitoring.
-- Individual accounts, role-based access, SSO, and audit attribution remain future work.
+- JWT user accounts, Argon2 password hashing, admin/harvester/viewer roles, account lockout, and audit events.
 
 ## Stage 6 — Exports and analytics
 - Public JSON, CSV, canonical XML, and OAI Dublin Core XML metadata exports.
@@ -50,6 +50,7 @@
 - Performance testing with representative repositories.
 - Accessibility review.
 - Release packaging and documentation.
+- MFA, SSO, password reset, token revocation, and fine-grained permission policies.
 
 ## Release gates
 
