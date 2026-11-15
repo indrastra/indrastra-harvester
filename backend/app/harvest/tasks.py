@@ -104,16 +104,14 @@ def run_harvest(self, job_id: int) -> dict[str, int | str]:
                         if source_record is not None and outcome != "unchanged":
                             normalize_source_record(db, source_record)
                             db.flush()
-                            outbox_event = db.scalar(
-                                select(IndexOutbox)
+                            index_event_ids.extend(db.scalars(
+                                select(IndexOutbox.id)
                                 .where(
                                     IndexOutbox.source_record_id == source_record.id,
                                     IndexOutbox.status == "pending",
                                 )
-                                .order_by(IndexOutbox.id.desc())
-                            )
-                            if outbox_event is not None:
-                                index_event_ids.append(outbox_event.id)
+                                .order_by(IndexOutbox.id)
+                            ).all())
                         counts["seen"] += 1
                         if outcome == "created":
                             counts["created"] += 1
