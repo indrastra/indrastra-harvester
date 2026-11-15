@@ -45,12 +45,11 @@
 - Advanced facets, trend analytics, scheduled reports, and bibliometric analytics remain future work.
 
 ## Stage 7 — Release hardening
-- Security review and dependency audit.
-- Backup/restore and upgrade documentation.
-- Performance testing with representative repositories.
-- Accessibility review.
-- Release packaging and documentation.
-- MFA, SSO, password reset, token revocation, and fine-grained permission policies.
+- Non-root backend/frontend containers, readiness probes, request IDs, and baseline security headers.
+- PostgreSQL backup/restore scripts and deployment/upgrade documentation.
+- CI validation for migrations, backend tests, frontend build, Compose configuration, and container images.
+- Remaining: external security review, performance/load testing, accessibility review, production OpenSearch hardening, and operational monitoring.
+- MFA, SSO, password reset, token revocation, and fine-grained permission policies remain future work.
 
 ## Release gates
 
