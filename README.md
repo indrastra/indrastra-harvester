@@ -30,7 +30,7 @@ The project collects, preserves, normalizes, indexes, and exposes scholarly meta
 - Additional metadata crosswalks (Qualified Dublin Core, MODS, MARCXML, JATS).
 - Advanced discovery features including facets, saved searches, and discovery analytics.
 - Repository and user administration with role-based access.
-- Scheduled incremental harvesting.
+- Advanced schedule calendars and timezone-specific scheduling.
 - Export to JSON, CSV, XML, and Dublin Core.
 - Analytics, monitoring, and public REST API.
 
@@ -135,7 +135,7 @@ The Compose environment is intended for local development. Review [SECURITY.md](
 
 ## Development status
 
-The repository contains the OAI-PMH client, repository registry, persistent harvesting engine, immutable source-record history, OAI Dublin Core/DataCite normalization, OpenSearch-backed search API with durable indexing outbox, and a Next.js public discovery portal with record detail pages. Individual user accounts, role-based permissions, index rebuild tooling, scheduled harvest policies, and production security/operational validation remain under development.
+The repository contains the OAI-PMH client, repository registry, persistent harvesting engine, immutable source-record history, OAI Dublin Core/DataCite normalization, OpenSearch-backed search API with durable indexing outbox, and a Next.js public discovery portal with record detail pages. Individual user accounts, role-based permissions, index rebuild tooling, advanced schedule calendars, exports, analytics, and production security/operational validation remain under development.
 
 See [Technical specification](docs/TECHNICAL_SPECIFICATION.md), [Architecture](docs/ARCHITECTURE.md), [Roadmap](docs/ROADMAP.md), [Search indexing](docs/SEARCH_INDEXING.md), [Frontend](docs/FRONTEND.md), [Administration](docs/ADMINISTRATION.md), [Security policy](SECURITY.md), and [Contributing guide](CONTRIBUTING.md).
 
