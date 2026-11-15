@@ -1,4 +1,5 @@
 from datetime import date
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field, model_validator
@@ -12,6 +13,7 @@ from backend.app.harvest.tasks import run_harvest
 from backend.app.repositories.models import Repository
 
 router = APIRouter(prefix="/harvests", tags=["harvesting"], dependencies=[Depends(require_admin)])
+DatabaseSession = Annotated[Session, Depends(get_db)]
 
 
 class HarvestCreate(BaseModel):
@@ -53,7 +55,7 @@ def enqueue_job(job: HarvestJob, db: Session) -> None:
 
 
 @router.post("", status_code=status.HTTP_202_ACCEPTED)
-def create_harvest(payload: HarvestCreate, db: Session = Depends(get_db)):
+def create_harvest(payload: HarvestCreate, db: DatabaseSession):
     repository = db.get(Repository, payload.repository_id)
     if repository is None or not repository.is_enabled:
         raise HTTPException(status_code=404, detail="Enabled repository not found.")
