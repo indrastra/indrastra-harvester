@@ -24,4 +24,4 @@ Open http://localhost:3000.
 
 The root Docker Compose file builds this frontend and passes HARVESTER_API_URL=http://api:8000/api/v1 for server-to-server API calls.
 
-The frontend does not receive the administrative API bearer token. Administrative functions are not part of this public discovery application.
+The administration page accepts an operator-supplied bearer token in volatile page memory and forwards requests through an allowlisted same-origin Next.js route handler. The token is not persisted. See docs/ADMINISTRATION.md for the security model.
