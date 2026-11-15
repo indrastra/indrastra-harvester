@@ -82,7 +82,10 @@ def issue_token(payload: LoginRequest, db: DatabaseSession):
     if user is None:
         verify_password(payload.password, DUMMY_PASSWORD_HASH)
         raise HTTPException(status_code=401, detail="Invalid email or password.")
-    if user.locked_until is not None and user.locked_until > now:
+    locked_until = user.locked_until
+    if locked_until is not None and locked_until.tzinfo is None:
+        locked_until = locked_until.replace(tzinfo=UTC)
+    if locked_until is not None and locked_until > now:
         raise HTTPException(status_code=429, detail="Login temporarily locked. Try again later.")
     if not user.is_active or not verify_password(payload.password, user.password_hash):
         user.failed_login_attempts += 1
