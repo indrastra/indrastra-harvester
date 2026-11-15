@@ -200,8 +200,42 @@ def test_user_creation_login_jwt_and_account_deactivation(monkeypatch):
 
 def test_user_login_rejects_wrong_password(monkeypatch):
     monkeypatch.setenv("JWT_SECRET_KEY", "test-only-jwt-signing-secret-that-is-long-enough")
+    created = client.post(
+        "/api/v1/auth/users",
+        headers=admin_headers(),
+        json={
+            "email": "password-test@example.org",
+            "full_name": "Password Test",
+            "password": "Correct-Password-2026",
+            "roles": ["viewer"],
+        },
+    )
+    assert created.status_code == 201
     response = client.post(
         "/api/v1/auth/token",
-        json={"email": "platform-admin@example.org", "password": "Wrong-Password-2026"},
+        json={"email": "password-test@example.org", "password": "Wrong-Password-2026"},
     )
     assert response.status_code == 401
+
+
+def test_harvester_role_can_manage_harvests_but_not_repositories(monkeypatch):
+    monkeypatch.setenv("JWT_SECRET_KEY", "test-only-jwt-signing-secret-that-is-long-enough")
+    created = client.post(
+        "/api/v1/auth/users",
+        headers=admin_headers(),
+        json={
+            "email": "harvester-test@example.org",
+            "full_name": "Harvest Operator",
+            "password": "Harvester-Password-2026",
+            "roles": ["harvester"],
+        },
+    )
+    assert created.status_code == 201
+    login = client.post(
+        "/api/v1/auth/token",
+        json={"email": "harvester-test@example.org", "password": "Harvester-Password-2026"},
+    )
+    assert login.status_code == 200
+    headers = {"Authorization": f"Bearer {login.json()['access_token']}"}
+    assert client.get("/api/v1/harvests", headers=headers).status_code == 200
+    assert client.get("/api/v1/repositories", headers=headers).status_code == 403
