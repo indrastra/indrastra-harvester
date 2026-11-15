@@ -17,11 +17,13 @@ The project collects, preserves, normalizes, indexes, and exposes scholarly meta
 4. Resume interrupted harvests using OAI-PMH resumption-token checkpoints.
 5. Store original source XML and preserve repository provenance.
 6. Track updates and deleted-record tombstones without physically deleting source records.
-7. Expose administrative APIs for repositories and harvest jobs.
+7. Normalize OAI Dublin Core and DataCite metadata into a versioned canonical schema.
+8. Preserve unknown XML fields and immutable source-record versions.
+9. Expose administrative APIs for repositories and harvest jobs.
 
 ## Planned platform capabilities
 
-- Metadata normalization and crosswalks.
+- Additional metadata crosswalks (Qualified Dublin Core, MODS, MARCXML, JATS).
 - OpenSearch-backed public discovery interface.
 - Repository and user administration with role-based access.
 - Scheduled incremental harvesting.
@@ -115,7 +117,7 @@ The Compose environment is intended for local development. Review [SECURITY.md](
 
 ## Development status
 
-The repository contains the initial OAI-PMH client, repository registry, and the first persistent harvesting-engine implementation. Metadata normalization, public discovery, full user administration, scheduled harvest policies, and production security/operational validation remain under development.
+The repository contains the initial OAI-PMH client, repository registry, persistent harvesting engine, immutable source-record history, and initial OAI Dublin Core/DataCite normalization crosswalks. OpenSearch indexing, public discovery, full user administration, scheduled harvest policies, and production security/operational validation remain under development.
 
 See [Technical specification](docs/TECHNICAL_SPECIFICATION.md), [Architecture](docs/ARCHITECTURE.md), [Roadmap](docs/ROADMAP.md), [Security policy](SECURITY.md), and [Contributing guide](CONTRIBUTING.md).
 
