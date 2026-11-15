@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from backend.app.harvest.models import SourceRecord
 from backend.app.metadata.models import NormalizedRecord
 from backend.app.metadata.normalizers import normalize_metadata
+from backend.app.search.service import queue_reindex
 
 
 def normalize_source_record(db: Session, source_record: SourceRecord) -> NormalizedRecord | None:
@@ -17,6 +18,7 @@ def normalize_source_record(db: Session, source_record: SourceRecord) -> Normali
         if normalized is not None:
             normalized.is_deleted = True
             normalized.normalized_at = datetime.now(UTC)
+        queue_reindex(db, source_record.id)
         return normalized
 
     result = normalize_metadata(source_record.original_xml, source_record.metadata_prefix)
@@ -54,4 +56,5 @@ def normalize_source_record(db: Session, source_record: SourceRecord) -> Normali
         normalized.resource_type = result.resource_types[0] if result.resource_types else None
         normalized.is_deleted = False
         normalized.normalized_at = now
+    queue_reindex(db, source_record.id)
     return normalized
