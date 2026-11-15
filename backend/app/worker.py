@@ -6,7 +6,7 @@ celery_app = Celery(
     "indrastra_harvester",
     broker=os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/1"),
     backend=os.getenv("CELERY_RESULT_BACKEND", "redis://localhost:6379/2"),
-    include=["backend.app.harvest.tasks"],
+    include=["backend.app.harvest.tasks", "backend.app.search.tasks"],
 )
 
 celery_app.conf.update(
