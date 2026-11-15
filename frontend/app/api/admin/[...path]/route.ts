@@ -16,7 +16,7 @@ function allowedPath(parts: string[], method: string): boolean {
     parts.length === 4 &&
     parts[0] === "auth" &&
     parts[1] === "users" &&
-    /^\\d+$/.test(parts[2]) &&
+    /^\d+$/.test(parts[2]) &&
     ["roles", "active"].includes(parts[3])
   ) {
     return method === "PATCH";
