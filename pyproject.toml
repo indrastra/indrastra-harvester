@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "indrastra-harvester"
-version = "0.6.0"
+version = "0.8.0"
 description = "Scholarly metadata harvesting and discovery platform"
 requires-python = ">=3.12"
 license = "AGPL-3.0-only"
