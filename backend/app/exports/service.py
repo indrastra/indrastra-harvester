@@ -3,7 +3,6 @@ import io
 import xml.etree.ElementTree as ET
 from typing import Any
 
-
 CSV_FIELDS = [
     "id", "repository_id", "repository_name", "oai_identifier", "metadata_prefix",
     "title", "creators", "contributors", "subjects", "descriptions", "publishers",
@@ -33,7 +32,6 @@ OAI_DC_ELEMENTS = {
 ET.register_namespace("dc", DC_NAMESPACE)
 ET.register_namespace("oai_dc", OAI_DC_NAMESPACE)
 
-
 def serialize_csv(records: list[dict[str, Any]]) -> str:
     output = io.StringIO(newline="")
     writer = csv.DictWriter(output, fieldnames=CSV_FIELDS)
@@ -52,7 +50,6 @@ def serialize_csv(records: list[dict[str, Any]]) -> str:
             row[field] = " | ".join(str(value) for value in values) if isinstance(values, list) else values
         writer.writerow(row)
     return output.getvalue()
-
 
 def serialize_xml(records: list[dict[str, Any]], *, oai_dc: bool = False) -> str:
     root = ET.Element("records", {"count": str(len(records))})
