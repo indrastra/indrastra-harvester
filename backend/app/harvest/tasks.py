@@ -5,6 +5,7 @@ from celery.exceptions import SoftTimeLimitExceeded
 from sqlalchemy import text
 
 from backend.app.db.session import SessionLocal
+from backend.app.harvest.exceptions import OAITransportError
 from backend.app.harvest.models import HarvestJob
 from backend.app.harvest.oai_client import NS, OAIPMHClient
 from backend.app.harvest.service import log_job, upsert_source_record
@@ -43,7 +44,6 @@ def run_harvest(self, job_id: int) -> dict[str, int | str]:
         if not locked:
             return {"job_id": job_id, "status": "already_running"}
 
-        # Refresh after acquiring the lock so a duplicate delivery sees the latest checkpoint.
         db.refresh(job)
         if job.status == "completed":
             return {"job_id": job_id, "status": "completed", "records_seen": job.records_seen}
@@ -68,7 +68,6 @@ def run_harvest(self, job_id: int) -> dict[str, int | str]:
                             params["set"] = job.set_spec
                         response = client.request("ListRecords", **params)
                     else:
-                        # OAI-PMH requires resumptionToken to be the only argument besides verb.
                         response = client.request("ListRecords", resumptionToken=token)
 
                     container = response.root.find("oai:ListRecords", NS)
@@ -108,7 +107,6 @@ def run_harvest(self, job_id: int) -> dict[str, int | str]:
                     job.records_updated += counts["updated"]
                     job.records_deleted += counts["deleted"]
                     job.pages_completed += 1
-                    # Record changes and the next token checkpoint commit atomically.
                     job.resumption_token = next_token or None
                     log_job(db, job.id, f"Page {job.pages_completed}: {counts['seen']} records processed.")
                     db.commit()
@@ -129,6 +127,16 @@ def run_harvest(self, job_id: int) -> dict[str, int | str]:
             log_job(db, job.id, job.error_message, "WARNING")
             db.commit()
             raise
+        except OAITransportError as exc:
+            job.status = "queued"
+            job.error_message = str(exc)[:4000]
+            log_job(db, job.id, f"Transient transport failure; retry scheduled: {exc}", "WARNING")
+            db.commit()
+            raise self.retry(
+                exc=exc,
+                countdown=min(30 * (2 ** self.request.retries), 300),
+                max_retries=3,
+            )
         except Exception as exc:
             job.status = "failed"
             job.error_message = str(exc)[:4000]
