@@ -8,8 +8,8 @@ from redis import Redis
 from sqlalchemy import text
 
 from backend.app.api.analytics import router as analytics_router
-from backend.app.api.auth import router as auth_router
 from backend.app.api.audit_events import router as audit_events_router
+from backend.app.api.auth import router as auth_router
 from backend.app.api.exports import router as exports_router
 from backend.app.api.harvests import router as harvests_router
 from backend.app.api.indexing import router as indexing_router
