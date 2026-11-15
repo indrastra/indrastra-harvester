@@ -8,6 +8,7 @@ from backend.app.harvest.service import upsert_source_record
 from backend.app.metadata.models import NormalizedRecord
 from backend.app.metadata.service import normalize_source_record
 from backend.app.repositories.models import Repository
+from backend.app.search.models import IndexOutbox
 
 
 def test_source_record_upsert_is_idempotent_and_repository_scoped():
@@ -71,4 +72,5 @@ def test_normalized_projection_updates_and_respects_deletion_tombstone():
         normalize_source_record(db, source)
         db.commit()
         assert db.query(NormalizedRecord).one().is_deleted is True
+        assert db.query(IndexOutbox).count() == 2
     engine.dispose()
