@@ -19,11 +19,12 @@
 - Retries, timeouts, rate limits, and job lifecycle.
 
 ## Stage 3 — Metadata pipeline
-- oai_dc parser and normalized schema.
-- Original XML preservation.
-- Validation and provenance.
-- Idempotent upsert and deletion tombstones.
-- Additional crosswalks.
+- OAI Dublin Core and initial DataCite crosswalks.
+- Generic XML field preservation for unknown metadata prefixes.
+- Versioned normalized schema and raw field map.
+- Original XML preservation and immutable source record versions.
+- Validation, provenance, and deletion propagation.
+- Additional crosswalks: Qualified Dublin Core, MODS, MARCXML, and JATS.
 
 ## Stage 4 — Search and discovery
 - OpenSearch mappings and indexing.
