@@ -58,6 +58,7 @@ def test_public_record_detail_exposes_metadata_and_provenance_but_hides_deleted_
         with Session(engine) as db:
             yield db
 
+    previous_override = app.dependency_overrides.get(get_db)
     app.dependency_overrides[get_db] = override_get_db
     try:
         client = TestClient(app)
@@ -76,5 +77,8 @@ def test_public_record_detail_exposes_metadata_and_provenance_but_hides_deleted_
         hidden = client.get(f"/api/v1/records/{source_id}")
         assert hidden.status_code == 404
     finally:
-        app.dependency_overrides.clear()
+        if previous_override is None:
+            app.dependency_overrides.pop(get_db, None)
+        else:
+            app.dependency_overrides[get_db] = previous_override
         engine.dispose()
