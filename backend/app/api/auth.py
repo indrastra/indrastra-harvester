@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from backend.app.api.dependencies import get_current_user, require_admin
 from backend.app.db.session import get_db
 from backend.app.users.models import AuditEvent, Role, User
-from backend.app.users.security import create_access_token, hash_password, verify_password
+from backend.app.users.security import create_access_token, hash_password, jwt_secret, verify_password
 
 DUMMY_PASSWORD_HASH = hash_password("indrastra-dummy-login-password")
 
@@ -73,6 +73,10 @@ def user_payload(user: User) -> dict:
 
 @router.post("/token")
 def issue_token(payload: LoginRequest, db: DatabaseSession):
+    try:
+        jwt_secret()
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
     user = db.scalar(select(User).where(func.lower(User.email) == payload.email.strip().lower()))
     now = datetime.now(UTC)
     if user is None:
