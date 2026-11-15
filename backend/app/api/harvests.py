@@ -32,7 +32,8 @@ class HarvestCreate(BaseModel):
 
 def job_payload(job: HarvestJob) -> dict:
     return {
-        "id": job.id, "repository_id": job.repository_id, "status": job.status,
+        "id": job.id, "repository_id": job.repository_id, "schedule_id": job.schedule_id,
+        "status": job.status,
         "metadata_prefix": job.metadata_prefix, "set_spec": job.set_spec,
         "from_date": job.from_date, "until_date": job.until_date,
         "records_seen": job.records_seen, "records_created": job.records_created,
