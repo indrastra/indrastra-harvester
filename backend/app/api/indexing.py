@@ -38,4 +38,4 @@ def dispatch_pending_index_events(
                 status_code=503,
                 detail=f"Index queue unavailable after queuing {queued} events.",
             ) from exc
-    return {"queued": queued, "remaining_pending": max(0, len(events) - queued)}
+    return {"queued": queued, "selected": len(events)}
