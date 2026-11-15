@@ -6,6 +6,7 @@ celery_app = Celery(
     "indrastra_harvester",
     broker=os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/1"),
     backend=os.getenv("CELERY_RESULT_BACKEND", "redis://localhost:6379/2"),
+    include=["backend.app.harvest.tasks"],
 )
 
 celery_app.conf.update(
@@ -14,4 +15,8 @@ celery_app.conf.update(
     accept_content=["json"],
     timezone="UTC",
     enable_utc=True,
+    task_acks_late=True,
+    worker_prefetch_multiplier=1,
+    task_reject_on_worker_lost=True,
+    broker_transport_options={"visibility_timeout": 3900},
 )
