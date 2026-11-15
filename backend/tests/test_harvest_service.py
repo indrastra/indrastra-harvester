@@ -4,9 +4,9 @@ from sqlalchemy.pool import StaticPool
 
 from backend.app.db.base import Base
 from backend.app.harvest.models import SourceRecord, SourceRecordVersion
+from backend.app.harvest.service import upsert_source_record
 from backend.app.metadata.models import NormalizedRecord
 from backend.app.metadata.service import normalize_source_record
-from backend.app.harvest.service import upsert_source_record
 from backend.app.repositories.models import Repository
 
 
