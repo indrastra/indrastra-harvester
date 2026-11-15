@@ -2,7 +2,7 @@
 
 ## Scope
 
-The administration console at `/admin` provides a lightweight operator interface for repository registration, endpoint validation, harvest scheduling, job monitoring, resuming failed/paused jobs, and dispatching pending search-index outbox events.
+The administration console at `/admin` provides a lightweight operator interface for repository registration, endpoint validation, one-off and recurring harvest scheduling, job monitoring, resuming failed/paused jobs, and dispatching pending search-index outbox events.
 
 ## Authentication model
 
