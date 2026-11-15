@@ -7,7 +7,7 @@ from sqlalchemy import select, text
 
 from backend.app.db.session import SessionLocal
 from backend.app.harvest.exceptions import OAITransportError
-from backend.app.harvest.models import HarvestJob, SourceRecord
+from backend.app.harvest.models import HarvestJob, HarvestSchedule, SourceRecord
 from backend.app.harvest.oai_client import NS, OAIPMHClient
 from backend.app.harvest.service import log_job, upsert_source_record
 from backend.app.metadata.service import normalize_source_record
@@ -149,12 +149,21 @@ def run_harvest(self, job_id: int) -> dict[str, int | str]:
             job.status = "completed"
             job.finished_at = datetime.now(UTC)
             job.resumption_token = None
+            if job.schedule_id is not None:
+                schedule = db.get(HarvestSchedule, job.schedule_id)
+                if schedule is not None:
+                    schedule.last_success_at = job.finished_at
+                    schedule.last_error = None
             log_job(db, job.id, "Harvest completed.")
             db.commit()
             return {"job_id": job_id, "status": job.status, "records_seen": job.records_seen}
         except SoftTimeLimitExceeded:
             job.status = "paused"
             job.error_message = "Worker time limit reached; resume from saved checkpoint."
+            if job.schedule_id is not None:
+                schedule = db.get(HarvestSchedule, job.schedule_id)
+                if schedule is not None:
+                    schedule.last_error = job.error_message
             log_job(db, job.id, job.error_message, "WARNING")
             db.commit()
             raise
@@ -178,6 +187,10 @@ def run_harvest(self, job_id: int) -> dict[str, int | str]:
             job.status = "failed"
             job.error_message = str(exc)[:4000]
             job.finished_at = datetime.now(UTC)
+            if job.schedule_id is not None:
+                schedule = db.get(HarvestSchedule, job.schedule_id)
+                if schedule is not None:
+                    schedule.last_error = job.error_message
             log_job(db, job.id, f"Harvest failed: {job.error_message}", "ERROR")
             db.commit()
             raise
