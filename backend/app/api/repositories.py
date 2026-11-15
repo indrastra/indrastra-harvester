@@ -34,9 +34,9 @@ def register_repository(payload: RepositoryCreate, db: DatabaseSession):
 
 @router.get("", response_model=list[RepositoryRead])
 def list_repositories(
+    db: DatabaseSession,
     offset: int = Query(default=0, ge=0),
     limit: int = Query(default=50, ge=1, le=200),
-    db: DatabaseSession,
 ):
     statement = select(Repository).order_by(Repository.id).offset(offset).limit(limit)
     return list(db.scalars(statement).all())

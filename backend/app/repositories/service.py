@@ -20,9 +20,12 @@ class RepositoryValidationError(ValueError):
 
 def validate_repository_endpoint(endpoint: str) -> dict:
     """Validate the public endpoint and discover basic OAI-PMH capabilities."""
-    safe_endpoint = validate_public_http_endpoint(endpoint)
-    # The deployment egress firewall/proxy must also enforce the destination policy.
-    validate_public_http_endpoint(safe_endpoint)
+    try:
+        safe_endpoint = validate_public_http_endpoint(endpoint)
+        # The deployment egress firewall/proxy must also enforce the destination policy.
+        validate_public_http_endpoint(safe_endpoint)
+    except ValueError as exc:
+        raise RepositoryValidationError(str(exc)) from exc
 
     try:
         with OAIPMHClient(safe_endpoint) as client:
@@ -78,7 +81,10 @@ def validate_repository_endpoint(endpoint: str) -> dict:
 
 def create_repository(db: Session, values: dict) -> Repository:
     values = dict(values)
-    endpoint = validate_public_http_endpoint(values.pop("endpoint"))
+    try:
+        endpoint = validate_public_http_endpoint(values.pop("endpoint"))
+    except ValueError as exc:
+        raise RepositoryValidationError(str(exc)) from exc
     validate_endpoint = values.pop("validate_endpoint", True)
 
     existing = db.scalar(select(Repository).where(Repository.endpoint == endpoint))

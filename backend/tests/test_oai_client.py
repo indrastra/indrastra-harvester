@@ -6,7 +6,7 @@ from backend.app.harvest.exceptions import (
     OAIProtocolError,
     OAIRequestError,
 )
-from backend.app.harvest.oai_client import OAIPMHClient, OAI_NS
+from backend.app.harvest.oai_client import OAI_NS, OAIPMHClient
 
 OAI = f'xmlns="{OAI_NS}"'
 
