@@ -1,6 +1,7 @@
 import hmac
 import os
-from typing import Annotated, Callable
+from collections.abc import Callable
+from typing import Annotated
 
 import jwt
 from fastapi import Depends, HTTPException, status
