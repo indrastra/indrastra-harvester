@@ -27,14 +27,21 @@ Please report vulnerabilities privately to the project maintainers using a desig
 - DNS answers are checked and all returned addresses must be globally routable.
 - Redirects are not followed automatically by the OAI-PMH client.
 - OAI response bodies are bounded while streaming and XML DTD/entity declarations are rejected.
-- Administrative write endpoints require a configured bearer token.
+- Administrative endpoints accept the bootstrap `ADMIN_API_TOKEN` or a short-lived JWT for a user with the required role.
+- User passwords are hashed with Argon2id; five failed login attempts trigger a 15-minute account lockout.
+- JWT signing requires a secret of at least 32 characters; use a separate `JWT_SECRET_KEY` in production.
+- Account deactivation is checked on every authenticated request, invalidating existing tokens for that account.
 
 **Important deployment limitation:** application-level DNS validation alone cannot completely eliminate DNS rebinding because the HTTP client's connection-time DNS lookup may differ from the validation lookup. Production deployments must enforce outbound network restrictions through a firewall or egress proxy that blocks private, loopback, link-local, multicast, reserved, and cloud metadata destinations. Do not expose the development stack directly to the public internet.
 
 ## Baseline controls
 
 - Enforce request timeouts and response-size limits.
-- Hash user passwords with a modern password hashing scheme when user accounts are introduced.
+- Hash user passwords with Argon2id and enforce account lockout for repeated failed logins.
 - Keep secrets out of source control and logs.
 - Apply least privilege to database and service accounts.
 - Keep dependencies and container images patched.
+
+## Remaining authentication limitations
+
+MFA, SSO, password reset, refresh-token rotation, a token revocation list, fine-grained per-resource permissions, and individual audit attribution for bootstrap-token actions are not implemented. Keep the admin console behind HTTPS and an identity-aware access layer. The platform is not production-ready until these gaps and the deployment release gates are reviewed.
