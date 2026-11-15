@@ -24,7 +24,7 @@ The project collects, preserves, normalizes, indexes, and exposes scholarly meta
 ## Planned platform capabilities
 
 - Additional metadata crosswalks (Qualified Dublin Core, MODS, MARCXML, JATS).
-- Public discovery interface with full-text search and repository/type/year filters.
+- Advanced discovery features including facets, saved searches, and discovery analytics.
 - Repository and user administration with role-based access.
 - Scheduled incremental harvesting.
 - Export to JSON, CSV, XML, and Dublin Core.
