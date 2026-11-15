@@ -1,4 +1,5 @@
 from datetime import datetime
+
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from backend.app.repositories.security import validate_public_http_endpoint

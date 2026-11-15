@@ -1,3 +1,5 @@
+from typing import Annotated
+
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -14,13 +16,14 @@ from backend.app.repositories.service import (
 )
 
 router = APIRouter(prefix="/repositories", tags=["repositories"])
+DatabaseSession = Annotated[Session, Depends(get_db)]
 
 
 @router.post(
     "", response_model=RepositoryRead, status_code=status.HTTP_201_CREATED,
     dependencies=[Depends(require_admin)],
 )
-def register_repository(payload: RepositoryCreate, db: Session = Depends(get_db)):
+def register_repository(payload: RepositoryCreate, db: DatabaseSession):
     try:
         return create_repository(db, payload.model_dump())
     except RepositoryAlreadyExistsError as exc:
@@ -33,14 +36,14 @@ def register_repository(payload: RepositoryCreate, db: Session = Depends(get_db)
 def list_repositories(
     offset: int = Query(default=0, ge=0),
     limit: int = Query(default=50, ge=1, le=200),
-    db: Session = Depends(get_db),
+    db: DatabaseSession,
 ):
     statement = select(Repository).order_by(Repository.id).offset(offset).limit(limit)
     return list(db.scalars(statement).all())
 
 
 @router.get("/{repository_id}", response_model=RepositoryRead)
-def get_repository(repository_id: int, db: Session = Depends(get_db)):
+def get_repository(repository_id: int, db: DatabaseSession):
     repository = db.get(Repository, repository_id)
     if repository is None:
         raise HTTPException(status_code=404, detail="Repository not found.")
@@ -52,7 +55,7 @@ def get_repository(repository_id: int, db: Session = Depends(get_db)):
     dependencies=[Depends(require_admin)],
 )
 def update_repository(
-    repository_id: int, payload: RepositoryUpdate, db: Session = Depends(get_db)
+    repository_id: int, payload: RepositoryUpdate, db: DatabaseSession
 ):
     repository = db.get(Repository, repository_id)
     if repository is None:
@@ -68,7 +71,7 @@ def update_repository(
     "/{repository_id}/validate", response_model=RepositoryRead,
     dependencies=[Depends(require_admin)],
 )
-def validate_repository(repository_id: int, db: Session = Depends(get_db)):
+def validate_repository(repository_id: int, db: DatabaseSession):
     repository = db.get(Repository, repository_id)
     if repository is None:
         raise HTTPException(status_code=404, detail="Repository not found.")
@@ -82,7 +85,7 @@ def validate_repository(repository_id: int, db: Session = Depends(get_db)):
     "/{repository_id}", status_code=status.HTTP_204_NO_CONTENT,
     dependencies=[Depends(require_admin)],
 )
-def delete_repository(repository_id: int, db: Session = Depends(get_db)):
+def delete_repository(repository_id: int, db: DatabaseSession):
     repository = db.get(Repository, repository_id)
     if repository is None:
         raise HTTPException(status_code=404, detail="Repository not found.")

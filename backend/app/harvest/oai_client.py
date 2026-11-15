@@ -6,11 +6,12 @@ while streaming rather than after buffering the full body.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Iterator
-from urllib.parse import urlparse
 import time
 import xml.etree.ElementTree as ET
+from collections.abc import Iterator
+from dataclasses import dataclass
+from typing import Self
+from urllib.parse import urlparse
 
 import httpx
 from defusedxml import ElementTree as SafeET
@@ -86,7 +87,7 @@ class OAIPMHClient:
         if self._owns_client:
             self.client.close()
 
-    def __enter__(self) -> "OAIPMHClient":
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(self, *_: object) -> None:

@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
@@ -70,7 +70,7 @@ def validate_repository_endpoint(endpoint: str) -> dict:
                 "granularity": read_text("granularity"),
                 "metadata_formats": [item for item in formats if item["metadata_prefix"]],
                 "sets": [item for item in sets if item["set_spec"]],
-                "last_validated_at": datetime.now(timezone.utc),
+                "last_validated_at": datetime.now(UTC),
             }
     except OAIError as exc:
         raise RepositoryValidationError(str(exc)) from exc
@@ -110,7 +110,7 @@ def refresh_repository_validation(db: Session, repository: Repository) -> Reposi
     except RepositoryValidationError as exc:
         repository.validation_status = "failed"
         repository.last_validation_error = str(exc)[:4000]
-        repository.last_validated_at = datetime.now(timezone.utc)
+        repository.last_validated_at = datetime.now(UTC)
         db.commit()
         db.refresh(repository)
         raise

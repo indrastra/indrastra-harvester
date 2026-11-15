@@ -1,15 +1,17 @@
 import hmac
 import os
+from typing import Annotated
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 bearer_scheme = HTTPBearer(auto_error=False)
+AdminCredentials = Annotated[
+    HTTPAuthorizationCredentials | None, Depends(bearer_scheme)
+]
 
 
-def require_admin(
-    credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
-) -> str:
+def require_admin(credentials: AdminCredentials) -> str:
     configured_token = os.getenv("ADMIN_API_TOKEN", "")
     if len(configured_token) < 32:
         raise HTTPException(
