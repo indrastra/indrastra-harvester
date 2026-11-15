@@ -1,12 +1,12 @@
 from datetime import UTC, datetime
 
 from sqlalchemy import (
+    JSON,
     Boolean,
     Column,
     DateTime,
     ForeignKey,
     Integer,
-    JSON,
     String,
     Table,
     Text,
@@ -15,7 +15,6 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from backend.app.db.base import Base
-
 
 user_roles = Table(
     "user_roles",
