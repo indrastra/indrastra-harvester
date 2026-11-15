@@ -27,9 +27,10 @@
 - Additional crosswalks: Qualified Dublin Core, MODS, MARCXML, and JATS.
 
 ## Stage 4 — Search and discovery
-- OpenSearch mappings and indexing.
-- Search API and facets.
-- Public discovery frontend and record pages.
+- Initial OpenSearch mapping and asynchronous indexing outbox.
+- Public search API with text, repository, resource-type, and year filters.
+- Relevance and publication-year sorting.
+- Public discovery frontend, facets, record pages, and index rebuild tooling.
 
 ## Stage 5 — Administration
 - Authentication and RBAC.
