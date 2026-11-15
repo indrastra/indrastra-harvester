@@ -2,28 +2,38 @@
 
 **IndraStra Harvester** is an open-source scholarly metadata harvesting and discovery platform developed by IndraStra Global Publishing Solutions Inc.
 
-The project aims to collect, normalize, index, and expose scholarly metadata from OAI-PMH-compliant repositories and other supported scholarly sources.
+The project collects, preserves, normalizes, indexes, and exposes scholarly metadata from OAI-PMH-compliant repositories and other supported scholarly sources.
 
 - **License:** GNU Affero General Public License v3.0 (AGPL-3.0)
 - **Deployment:** Self-hosted; Docker-first
 - **Initial protocol:** OAI-PMH 2.0
-- **Status:** Early development — not production-ready
+- **Status:** Active development — not production-ready
 
-## Project goals
+## Project capabilities
 
 1. Register and validate scholarly repositories.
-2. Harvest metadata using all six OAI-PMH verbs.
-3. Normalize and preserve source metadata.
-4. Schedule incremental harvesting and resume interrupted jobs.
-5. Index records for public discovery.
-6. Provide administration, monitoring, export, and REST API capabilities.
+2. Harvest metadata using OAI-PMH 2.0.
+3. Run persistent asynchronous harvest jobs using Celery.
+4. Resume interrupted harvests using OAI-PMH resumption-token checkpoints.
+5. Store original source XML and preserve repository provenance.
+6. Track updates and deleted-record tombstones without physically deleting source records.
+7. Expose administrative APIs for repositories and harvest jobs.
 
-## Planned technology stack
+## Planned platform capabilities
+
+- Metadata normalization and crosswalks.
+- OpenSearch-backed public discovery interface.
+- Repository and user administration with role-based access.
+- Scheduled incremental harvesting.
+- Export to JSON, CSV, XML, and Dublin Core.
+- Analytics, monitoring, and public REST API.
+
+## Technology stack
 
 | Component | Technology |
 |---|---|
 | API | Python, FastAPI, Pydantic |
-| Frontend | Next.js, React, TypeScript |
+| Frontend | Next.js, React, TypeScript (planned) |
 | Database | PostgreSQL |
 | Search | OpenSearch |
 | Background jobs | Celery |
@@ -43,9 +53,13 @@ deploy/        Deployment guidance
 .github/       CI workflows
 ```
 
-## Repository registry API
+## API
 
-The repository-management API is available under `/api/v1/repositories`.
+All administrative endpoints require an HTTP bearer token configured as `ADMIN_API_TOKEN` (minimum 32 characters). If the token is not configured, administrative operations fail closed with HTTP 503. A complete user and role management system is planned for a later milestone.
+
+### Repository registry
+
+Base path: `/api/v1/repositories`
 
 | Method | Endpoint | Purpose |
 |---|---|---|
@@ -56,9 +70,32 @@ The repository-management API is available under `/api/v1/repositories`.
 | POST | `/api/v1/repositories/{id}/validate` | Recheck OAI-PMH endpoint and capabilities |
 | DELETE | `/api/v1/repositories/{id}` | Disable repository (soft delete) |
 
-**All repository registry operations require an HTTP bearer token** configured as `ADMIN_API_TOKEN` (minimum 32 characters). If the token is not configured, administrative operations fail closed with HTTP 503. A full user and role management system is planned for a later milestone.
+### Harvest jobs
 
-## Database setup
+Base path: `/api/v1/harvests`
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| POST | `/api/v1/harvests` | Queue a ListRecords harvest |
+| GET | `/api/v1/harvests` | List persistent harvest jobs |
+| GET | `/api/v1/harvests/{id}` | View job status, counters, and logs |
+| POST | `/api/v1/harvests/{id}/resume` | Resume a failed or paused job |
+
+Example harvest request:
+
+```json
+{
+  "repository_id": 1,
+  "metadata_prefix": "oai_dc",
+  "set_spec": null,
+  "from_date": "2026-01-01",
+  "until_date": "2026-11-15"
+}
+```
+
+Source-record identity is the pair `repository_id + oai_identifier`. Each page's record writes and next resumption-token checkpoint are committed together. When a resumption token is present, the next OAI-PMH request contains only the verb and token. Deleted headers are stored as tombstones; historical source data is not physically deleted.
+
+## Local development
 
 Copy `.env.example` to `.env`, replace all development secrets, and start the stack:
 
@@ -66,19 +103,19 @@ Copy `.env.example` to `.env`, replace all development secrets, and start the st
 docker compose up --build -d
 ```
 
-Docker Compose runs the Alembic migration service before starting the API and worker. Check the API:
+Docker Compose runs Alembic migrations before starting the API and worker. Check the API:
 
 ```bash
 curl http://localhost:8000/health
 ```
 
-The local API documentation is available at `http://localhost:8000/docs`.
+Interactive API documentation is available at `http://localhost:8000/docs`.
 
-The Docker Compose environment is intended for local development. Review `SECURITY.md` before exposing any service to a network. Application-level DNS validation must be complemented by outbound firewall or egress-proxy restrictions.
+The Compose environment is intended for local development. Review [SECURITY.md](SECURITY.md) before exposing any service to a network. Application-level DNS validation cannot alone eliminate DNS rebinding; production deployments must enforce outbound restrictions using a firewall or egress proxy.
 
 ## Development status
 
-The repository contains the initial OAI-PMH client and repository registry milestone. Persistent harvesting jobs, normalized record storage, the discovery interface, and production security controls remain under development.
+The repository contains the initial OAI-PMH client, repository registry, and the first persistent harvesting-engine implementation. Metadata normalization, public discovery, full user administration, scheduled harvest policies, and production security/operational validation remain under development.
 
 See [Technical specification](docs/TECHNICAL_SPECIFICATION.md), [Architecture](docs/ARCHITECTURE.md), [Roadmap](docs/ROADMAP.md), [Security policy](SECURITY.md), and [Contributing guide](CONTRIBUTING.md).
 
