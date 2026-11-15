@@ -1,21 +1,12 @@
-# OAI-PMH harvesting module
+# Persistent harvesting engine
 
-oai_client.py contains the first protocol client implementation.
+The harvesting API is available under `/api/v1/harvests` and requires the administrative bearer token.
 
-Current scope:
-- All six OAI-PMH verbs.
-- Namespace-aware XML parsing.
-- Protocol error detection.
-- HTTP timeout and response-size limits.
-- No automatic redirect following.
-- ListRecords resumption-token iteration.
+- `POST /api/v1/harvests`: enqueue a ListRecords harvest.
+- `GET /api/v1/harvests`: list persistent jobs.
+- `GET /api/v1/harvests/{id}`: inspect status, counters, and execution logs.
+- `POST /api/v1/harvests/{id}/resume`: resume a paused or failed job from its saved checkpoint.
 
-Not yet implemented:
-- Persisted job orchestration and checkpoints.
-- DNS/IP-based SSRF protection for repository URLs.
-- Retry/backoff policy.
-- Metadata normalization and database persistence.
-- Full OAI-PMH conformance test suite.
+Each OAI record is keyed by repository ID + OAI identifier. Original record XML is retained. Deleted headers become tombstones rather than physical deletions. Resumption-token checkpoints are committed in the same transaction as each processed page. When a token is present, subsequent requests send only `verb=ListRecords` and `resumptionToken`.
 
-Do not deploy this module as a public service until the remaining security and
-operational controls are implemented.
+Run the database migrations before starting workers. Configure production egress filtering as described in SECURITY.md; application DNS checks alone do not eliminate DNS rebinding risk.
