@@ -23,6 +23,7 @@ The project collects, preserves, normalizes, indexes, and exposes scholarly meta
 10. Expose public search and administrative APIs for repositories, harvest jobs, and indexing.
 11. Provide a responsive Next.js public discovery portal and record detail pages.
 12. Provide a token-protected operator console for repository and harvest management.
+13. Schedule hourly, daily, and weekly incremental harvests using Celery Beat.
 
 ## Planned platform capabilities
 
@@ -84,6 +85,10 @@ Base path: `/api/v1/repositories`
 | POST | `/api/v1/index/dispatch` | Dispatch pending indexing events (admin only) |
 
 See [Search indexing](docs/SEARCH_INDEXING.md) for query parameters, mapping, and outbox behaviour.
+
+### Scheduled harvesting
+
+See [Scheduled harvesting](docs/SCHEDULING.md) for recurring schedule configuration and UTC semantics. All schedule endpoints require the administrative bearer token.
 
 ### Harvest jobs
 
