@@ -6,13 +6,13 @@ from pydantic import BaseModel, Field, model_validator
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from backend.app.api.dependencies import require_admin
+from backend.app.api.dependencies import require_roles
 from backend.app.db.session import get_db
 from backend.app.harvest.models import HarvestJob, HarvestJobLog
 from backend.app.harvest.tasks import run_harvest
 from backend.app.repositories.models import Repository
 
-router = APIRouter(prefix="/harvests", tags=["harvesting"], dependencies=[Depends(require_admin)])
+router = APIRouter(prefix="/harvests", tags=["harvesting"], dependencies=[Depends(require_roles("admin", "harvester"))])
 DatabaseSession = Annotated[Session, Depends(get_db)]
 
 
