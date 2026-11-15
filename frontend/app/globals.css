@@ -206,3 +206,47 @@ nav { display: flex; gap: 26px; color: #475569; font-size: 13px; font-weight: 60
   .admin-token-form { align-items: stretch; flex-direction: column; }
   .admin-token-form button { min-height: 44px; }
 }
+
+
+.admin-schedule-form {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr .8fr 1fr auto;
+  gap: 12px;
+  align-items: end;
+  margin: 0 0 18px;
+}
+.admin-schedule-form label {
+  display: block;
+  margin: 0 0 7px;
+  color: #475569;
+  font-size: 11px;
+  font-weight: 700;
+}
+.admin-schedule-form input, .admin-schedule-form select {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 10px 11px;
+  color: var(--ink);
+  background: #fff;
+  outline-color: var(--blue);
+  font-size: 12px;
+}
+.admin-schedule-form button {
+  min-height: 38px;
+  border: 0;
+  border-radius: 7px;
+  padding: 0 14px;
+  color: #fff;
+  background: var(--blue);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.admin-schedule-form button:disabled { opacity: .5; cursor: not-allowed; }
+@media (max-width: 900px) {
+  .admin-schedule-form { grid-template-columns: 1fr 1fr; }
+  .admin-schedule-form button { min-height: 42px; }
+}
