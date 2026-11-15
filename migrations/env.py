@@ -9,6 +9,7 @@ from backend.app.db.base import Base
 from backend.app.harvest.models import (  # noqa: F401
     HarvestJob,
     HarvestJobLog,
+    HarvestSchedule,
     SourceRecord,
     SourceRecordVersion,
 )
