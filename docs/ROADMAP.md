@@ -30,7 +30,8 @@
 - Initial OpenSearch mapping and asynchronous indexing outbox.
 - Public search API with text, repository, resource-type, and year filters.
 - Relevance and publication-year sorting.
-- Initial Next.js public search and record detail pages.\n- Facets, advanced discovery, and index rebuild tooling.
+- Initial Next.js public search and record detail pages.
+- Facets, advanced discovery, and index rebuild tooling.
 
 ## Stage 5 — Administration
 - Authentication and RBAC.
