@@ -1,5 +1,6 @@
 import os
 from typing import Any
+from urllib.parse import urlsplit
 
 from opensearchpy import OpenSearch
 from sqlalchemy.orm import Session
@@ -52,9 +53,17 @@ INDEX_MAPPING: dict[str, Any] = {
 
 
 def get_opensearch_client() -> OpenSearch:
-    url = os.getenv("OPENSEARCH_URL", "http://localhost:9200")
+    parsed = urlsplit(os.getenv("OPENSEARCH_URL", "http://localhost:9200"))
+    if parsed.scheme not in {"http", "https"} or not parsed.hostname:
+        raise ValueError("OPENSEARCH_URL must be a valid HTTP or HTTPS URL.")
+    username = os.getenv("OPENSEARCH_USERNAME")
+    password = os.getenv("OPENSEARCH_PASSWORD")
+    auth = (username, password) if username and password else None
     return OpenSearch(
-        hosts=[url],
+        hosts=[{"host": parsed.hostname, "port": parsed.port or (443 if parsed.scheme == "https" else 9200)}],
+        http_auth=auth,
+        use_ssl=parsed.scheme == "https",
+        verify_certs=parsed.scheme == "https",
         timeout=10,
         max_retries=2,
         retry_on_timeout=True,
@@ -118,6 +127,7 @@ def search_records(
     repository_id: int | None = None, resource_type: str | None = None,
     from_year: int | None = None, until_year: int | None = None, sort: str = "relevance",
 ) -> dict[str, Any]:
+    ensure_index(client)
     filters: list[dict[str, Any]] = []
     if repository_id is not None:
         filters.append({"term": {"repository_id": repository_id}})
