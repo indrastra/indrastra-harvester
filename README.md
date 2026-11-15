@@ -28,7 +28,7 @@ The project aims to collect, normalize, index, and expose scholarly metadata fro
 | Search | OpenSearch |
 | Background jobs | Celery |
 | Queue/cache | Redis |
-| XML | lxml |
+| XML | defusedxml / lxml |
 | Deployment | Docker Compose |
 | CI | GitHub Actions |
 
@@ -36,21 +36,49 @@ The project aims to collect, normalize, index, and expose scholarly metadata fro
 
 ```text
 backend/       API, harvesting engine, metadata and tests
+migrations/    Alembic database migrations
 docs/          Technical specification, architecture and roadmap
 frontend/      Web application (planned)
 deploy/        Deployment guidance
 .github/       CI workflows
 ```
 
+## Repository registry API
+
+The repository-management API is available under `/api/v1/repositories`.
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| POST | `/api/v1/repositories` | Register a repository |
+| GET | `/api/v1/repositories` | List repositories |
+| GET | `/api/v1/repositories/{id}` | View repository |
+| PATCH | `/api/v1/repositories/{id}` | Update repository details |
+| POST | `/api/v1/repositories/{id}/validate` | Recheck OAI-PMH endpoint and capabilities |
+| DELETE | `/api/v1/repositories/{id}` | Disable repository (soft delete) |
+
+Write operations require an HTTP bearer token configured as `ADMIN_API_TOKEN` (minimum 32 characters). If the token is not configured, administrative writes fail closed with HTTP 503. Read endpoints are currently public; role-based read permissions are planned for a later milestone.
+
+## Database setup
+
+Copy `.env.example` to `.env`, replace all development secrets, and start PostgreSQL. Apply migrations:
+
+```bash
+alembic upgrade head
+```
+
+Start the API:
+
+```bash
+uvicorn backend.app.main:app --reload
+```
+
+The Docker Compose environment is intended for local development. Review `SECURITY.md` before exposing any service to a network. Application-level DNS validation must be complemented by outbound firewall or egress-proxy restrictions.
+
 ## Development status
 
-This repository contains an early project scaffold and an OAI-PMH client implementation. The complete harvesting workflow, persistent storage, authentication, discovery interface, and production security controls are not yet implemented.
+The repository contains the initial OAI-PMH client and repository registry milestone. Persistent harvesting jobs, normalized record storage, the discovery interface, and production security controls remain under development.
 
 See [Technical specification](docs/TECHNICAL_SPECIFICATION.md), [Architecture](docs/ARCHITECTURE.md), [Roadmap](docs/ROADMAP.md), [Security policy](SECURITY.md), and [Contributing guide](CONTRIBUTING.md).
-
-## Quick start
-
-The Docker Compose environment is intended for local development. Review `.env.example` and the deployment documentation before running it. Do not expose the development configuration to the public internet.
 
 ## License
 
