@@ -7,8 +7,8 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from backend.app.db.base import Base
-from backend.app.harvest.models import HarvestSchedule
 from backend.app.db.session import get_db
+from backend.app.harvest.models import HarvestSchedule
 from backend.app.main import app
 from backend.app.repositories.models import Repository
 
