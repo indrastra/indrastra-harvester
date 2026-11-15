@@ -3,6 +3,9 @@ const API_BASE = (process.env.HARVESTER_API_URL ?? "http://localhost:8000/api/v1
 type RouteContext = { params: Promise<{ path: string[] }> };
 
 function allowedPath(parts: string[], method: string): boolean {
+  if (parts.length === 2 && parts[0] === "analytics" && parts[1] === "summary") {
+    return method === "GET";
+  }
   if (parts.length === 1 && parts[0] === "repositories") {
     return method === "GET" || method === "POST";
   }
