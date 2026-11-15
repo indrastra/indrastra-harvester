@@ -1,7 +1,7 @@
+import json
 from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from fastapi.encoders import jsonable_encoder
 from fastapi.responses import Response
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -137,15 +137,16 @@ def export_records(
             }
         records = [by_id[record_id] for record_id in ids if record_id in by_id]
 
+    extension = "json" if format == "json" else "csv" if format == "csv" else "xml"
     headers = {
         "X-Total-Hits": str(total),
         "X-Exported-Records": str(len(records)),
-        "Content-Disposition": f'attachment; filename="indrastra-harvester-{format}-export.{ "json" if format == "json" else "csv" if format == "csv" else "xml" }"',
+        "Content-Disposition": f'attachment; filename="indrastra-harvester-{format}-export.{extension}"',
     }
     if format == "json":
         return Response(
-            content=__import__("json").dumps(
-                jsonable_encoder({"total_hits": total, "exported": len(records), "records": records}),
+            content=json.dumps(
+                {"total_hits": total, "exported": len(records), "records": records},
                 ensure_ascii=False,
             ),
             media_type="application/json",
