@@ -1,6 +1,6 @@
 from datetime import UTC, datetime, timedelta
 
-from celery.exceptions import OperationalError as CeleryOperationalError
+from kombu.exceptions import OperationalError as CeleryOperationalError
 from sqlalchemy import select
 
 from backend.app.db.session import SessionLocal
