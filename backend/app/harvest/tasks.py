@@ -2,13 +2,14 @@ from datetime import UTC, datetime
 from xml.etree import ElementTree as ET
 
 from celery.exceptions import SoftTimeLimitExceeded
-from sqlalchemy import text
+from sqlalchemy import select, text
 
 from backend.app.db.session import SessionLocal
 from backend.app.harvest.exceptions import OAITransportError
-from backend.app.harvest.models import HarvestJob
+from backend.app.harvest.models import HarvestJob, SourceRecord
 from backend.app.harvest.oai_client import NS, OAIPMHClient
 from backend.app.harvest.service import log_job, upsert_source_record
+from backend.app.metadata.service import normalize_source_record
 from backend.app.repositories.models import Repository
 from backend.app.worker import celery_app
 
@@ -93,6 +94,12 @@ def run_harvest(self, job_id: int) -> dict[str, int | str]:
                             metadata_prefix=job.metadata_prefix,
                             original_xml=ET.tostring(item, encoding="unicode"), deleted=deleted,
                         )
+                        source_record = db.scalar(select(SourceRecord).where(
+                            SourceRecord.repository_id == repository.id,
+                            SourceRecord.oai_identifier == identifier,
+                        ))
+                        if source_record is not None:
+                            normalize_source_record(db, source_record)
                         counts["seen"] += 1
                         if outcome == "created":
                             counts["created"] += 1
