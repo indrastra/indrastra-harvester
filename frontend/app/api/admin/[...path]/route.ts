@@ -20,6 +20,20 @@ function allowedPath(parts: string[], method: string): boolean {
   if (parts.length === 1 && parts[0] === "harvests") {
     return method === "GET" || method === "POST";
   }
+  if (parts.length === 1 && parts[0] === "schedules") {
+    return method === "GET" || method === "POST";
+  }
+  if (parts.length === 2 && parts[0] === "schedules" && /^\\d+$/.test(parts[1])) {
+    return method === "PATCH" || method === "DELETE";
+  }
+  if (
+    parts.length === 3 &&
+    parts[0] === "schedules" &&
+    /^\\d+$/.test(parts[1]) &&
+    parts[2] === "run-now"
+  ) {
+    return method === "POST";
+  }
   if (parts.length === 2 && parts[0] === "harvests" && /^\d+$/.test(parts[1])) {
     return method === "GET";
   }
