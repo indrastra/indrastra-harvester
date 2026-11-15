@@ -21,7 +21,8 @@ The project collects, preserves, normalizes, indexes, and exposes scholarly meta
 8. Preserve unknown XML fields and immutable source-record versions.
 9. Index normalized records asynchronously in OpenSearch using a durable outbox.
 10. Expose public search and administrative APIs for repositories, harvest jobs, and indexing.
-11. Provide a responsive Next.js public discovery portal and record detail pages.\n12. Provide a token-protected operator console for repository and harvest management.
+11. Provide a responsive Next.js public discovery portal and record detail pages.
+12. Provide a token-protected operator console for repository and harvest management.
 
 ## Planned platform capabilities
 
