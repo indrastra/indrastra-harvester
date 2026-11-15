@@ -3,7 +3,6 @@ from defusedxml.common import DefusedXmlException
 
 from backend.app.metadata.normalizers import normalize_metadata
 
-
 OAI_DC_RECORD = """<record xmlns:oai="http://www.openarchives.org/OAI/2.0/"
  xmlns:dc="http://purl.org/dc/elements/1.1/"
  xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/">
