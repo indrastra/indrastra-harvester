@@ -19,7 +19,8 @@ The project collects, preserves, normalizes, indexes, and exposes scholarly meta
 6. Track updates and deleted-record tombstones without physically deleting source records.
 7. Normalize OAI Dublin Core and DataCite metadata into a versioned canonical schema.
 8. Preserve unknown XML fields and immutable source-record versions.
-9. Index normalized records asynchronously in OpenSearch using a durable outbox.\n10. Expose public search and administrative APIs for repositories, harvest jobs, and indexing.
+9. Index normalized records asynchronously in OpenSearch using a durable outbox.
+10. Expose public search and administrative APIs for repositories, harvest jobs, and indexing.
 
 ## Planned platform capabilities
 
