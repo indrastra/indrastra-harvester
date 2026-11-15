@@ -1,7 +1,8 @@
 from datetime import UTC, datetime
+from xml.etree import ElementTree as ET
 
 from celery.exceptions import SoftTimeLimitExceeded
-from sqlalchemy import select, text
+from sqlalchemy import text
 
 from backend.app.db.session import SessionLocal
 from backend.app.harvest.models import HarvestJob
@@ -12,17 +13,20 @@ from backend.app.worker import celery_app
 
 
 @celery_app.task(
-    bind=True, name="harvest.run",
-    autoretry_for=(), max_retries=3, acks_late=True,
+    bind=True, name="harvest.run", max_retries=3, acks_late=True,
     soft_time_limit=3300, time_limit=3600,
 )
 def run_harvest(self, job_id: int) -> dict[str, int | str]:
-    """Run a durable ListRecords harvest; each page commits records and checkpoint together."""
+    """Run ListRecords with durable page-level checkpoints and idempotent delivery."""
     db = SessionLocal()
+    lock_key: int | None = None
+    locked = False
     try:
         job = db.get(HarvestJob, job_id)
         if job is None:
             return {"job_id": job_id, "status": "missing"}
+        if job.status == "completed":
+            return {"job_id": job_id, "status": "completed", "records_seen": job.records_seen}
         repository = db.get(Repository, job.repository_id)
         if repository is None or not repository.is_enabled:
             job.status = "failed"
@@ -32,13 +36,21 @@ def run_harvest(self, job_id: int) -> dict[str, int | str]:
             db.commit()
             return {"job_id": job_id, "status": "failed"}
 
-        # PostgreSQL advisory lock prevents overlapping harvests for a repository.
         lock_key = int(repository.id)
-        db.execute(text("SELECT pg_advisory_lock(:key)"), {"key": lock_key})
+        locked = bool(db.execute(
+            text("SELECT pg_try_advisory_lock(:key)"), {"key": lock_key}
+        ).scalar())
+        if not locked:
+            return {"job_id": job_id, "status": "already_running"}
+
+        # Refresh after acquiring the lock so a duplicate delivery sees the latest checkpoint.
+        db.refresh(job)
+        if job.status == "completed":
+            return {"job_id": job_id, "status": "completed", "records_seen": job.records_seen}
         job.status = "running"
         job.started_at = job.started_at or datetime.now(UTC)
         job.celery_task_id = self.request.id
-        log_job(db, job.id, "Harvest started.")
+        log_job(db, job.id, "Harvest started or resumed.")
         db.commit()
 
         try:
@@ -56,6 +68,7 @@ def run_harvest(self, job_id: int) -> dict[str, int | str]:
                             params["set"] = job.set_spec
                         response = client.request("ListRecords", **params)
                     else:
+                        # OAI-PMH requires resumptionToken to be the only argument besides verb.
                         response = client.request("ListRecords", resumptionToken=token)
 
                     container = response.root.find("oai:ListRecords", NS)
@@ -78,9 +91,7 @@ def run_harvest(self, job_id: int) -> dict[str, int | str]:
                             db, repository_id=repository.id, identifier=identifier,
                             datestamp=datestamp, set_specs=set_specs,
                             metadata_prefix=job.metadata_prefix,
-                            original_xml=__import__("xml.etree.ElementTree", fromlist=["tostring"]).tostring(
-                                item, encoding="unicode"
-                            ), deleted=deleted,
+                            original_xml=ET.tostring(item, encoding="unicode"), deleted=deleted,
                         )
                         counts["seen"] += 1
                         if outcome == "created":
@@ -97,7 +108,7 @@ def run_harvest(self, job_id: int) -> dict[str, int | str]:
                     job.records_updated += counts["updated"]
                     job.records_deleted += counts["deleted"]
                     job.pages_completed += 1
-                    # Checkpoint and record changes are committed atomically.
+                    # Record changes and the next token checkpoint commit atomically.
                     job.resumption_token = next_token or None
                     log_job(db, job.id, f"Page {job.pages_completed}: {counts['seen']} records processed.")
                     db.commit()
@@ -125,8 +136,8 @@ def run_harvest(self, job_id: int) -> dict[str, int | str]:
             log_job(db, job.id, f"Harvest failed: {job.error_message}", "ERROR")
             db.commit()
             raise
-        finally:
+    finally:
+        if locked and lock_key is not None:
             db.execute(text("SELECT pg_advisory_unlock(:key)"), {"key": lock_key})
             db.commit()
-    finally:
         db.close()
