@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from sqlalchemy import engine_from_config, pool
 
 from backend.app.db.base import Base
+from backend.app.harvest.models import HarvestJob, HarvestJobLog, SourceRecord  # noqa: F401
 from backend.app.repositories.models import Repository  # noqa: F401
 
 load_dotenv()
