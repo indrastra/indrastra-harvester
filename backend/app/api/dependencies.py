@@ -79,6 +79,8 @@ def require_admin(
         credentials.credentials, configured_token
     ):
         return "admin"
+    if not jwt_configured:
+        raise _unauthorized("Invalid administrative token.")
 
     user = _user_from_credentials(credentials, db)
     if _has_role(user, {"admin"}):
@@ -101,6 +103,10 @@ def require_roles(*allowed_roles: str) -> Callable:
             and hmac.compare_digest(credentials.credentials, configured_token)
         ):
             return "admin"
+        try:
+            jwt_secret()
+        except RuntimeError:
+            raise _unauthorized("Invalid bearer token.")
         user = _user_from_credentials(credentials, db)
         if _has_role(user, allowed):
             return user
