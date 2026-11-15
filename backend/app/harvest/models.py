@@ -14,6 +14,9 @@ class HarvestJob(Base):
     __tablename__ = "harvest_jobs"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     repository_id: Mapped[int] = mapped_column(ForeignKey("repositories.id", ondelete="RESTRICT"), index=True)
+    schedule_id: Mapped[int | None] = mapped_column(
+        ForeignKey("harvest_schedules.id", ondelete="SET NULL"), nullable=True, index=True
+    )
     status: Mapped[str] = mapped_column(String(24), default="queued", nullable=False, index=True)
     metadata_prefix: Mapped[str] = mapped_column(String(128), nullable=False)
     set_spec: Mapped[str | None] = mapped_column(String(255))
@@ -30,6 +33,30 @@ class HarvestJob(Base):
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, nullable=False)
+
+
+class HarvestSchedule(Base):
+    __tablename__ = "harvest_schedules"
+    __table_args__ = (
+        Index("ix_harvest_schedules_due", "enabled", "next_run_at"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    repository_id: Mapped[int] = mapped_column(
+        ForeignKey("repositories.id", ondelete="RESTRICT"), nullable=False, index=True
+    )
+    metadata_prefix: Mapped[str] = mapped_column(String(128), nullable=False)
+    set_spec: Mapped[str | None] = mapped_column(String(255))
+    frequency: Mapped[str] = mapped_column(String(16), nullable=False)
+    enabled: Mapped[bool] = mapped_column(default=True, nullable=False, index=True)
+    next_run_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
+    last_run_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    last_success_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    last_error: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utc_now, onupdate=utc_now, nullable=False
+    )
 
 
 class HarvestJobLog(Base):
