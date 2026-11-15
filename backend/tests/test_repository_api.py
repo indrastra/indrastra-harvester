@@ -81,3 +81,44 @@ def test_repository_endpoint_duplicate_returns_conflict():
     second = client.post("/api/v1/repositories", headers=admin_headers(), json=payload)
     assert first.status_code == 201
     assert second.status_code == 409
+
+
+def test_harvest_schedule_can_be_created_listed_and_disabled():
+    repository_response = client.post(
+        "/api/v1/repositories",
+        headers=admin_headers(),
+        json={
+            "name": "Scheduled Repository",
+            "endpoint": "https://1.1.1.1/scheduled-oai",
+            "validate_endpoint": False,
+        },
+    )
+    assert repository_response.status_code == 201
+    repository_id = repository_response.json()["id"]
+
+    schedule_response = client.post(
+        "/api/v1/schedules",
+        headers=admin_headers(),
+        json={
+            "repository_id": repository_id,
+            "metadata_prefix": "oai_dc",
+            "frequency": "daily",
+            "start_at": "2026-11-15T12:00:00Z",
+        },
+    )
+    assert schedule_response.status_code == 201
+    schedule = schedule_response.json()
+    assert schedule["enabled"] is True
+    assert schedule["frequency"] == "daily"
+
+    listed = client.get("/api/v1/schedules", headers=admin_headers())
+    assert listed.status_code == 200
+    assert any(item["id"] == schedule["id"] for item in listed.json())
+
+    disabled = client.patch(
+        f"/api/v1/schedules/{schedule['id']}",
+        headers=admin_headers(),
+        json={"enabled": False},
+    )
+    assert disabled.status_code == 200
+    assert disabled.json()["enabled"] is False
