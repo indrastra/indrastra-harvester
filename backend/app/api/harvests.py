@@ -82,7 +82,7 @@ def list_harvests(
 
 
 @router.get("/{job_id}")
-def get_harvest(job_id: int, db: Session = Depends(get_db)):
+def get_harvest(job_id: int, db: DatabaseSession):
     job = db.get(HarvestJob, job_id)
     if job is None:
         raise HTTPException(status_code=404, detail="Harvest job not found.")
@@ -95,7 +95,7 @@ def get_harvest(job_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/{job_id}/resume", status_code=status.HTTP_202_ACCEPTED)
-def resume_harvest(job_id: int, db: Session = Depends(get_db)):
+def resume_harvest(job_id: int, db: DatabaseSession):
     job = db.get(HarvestJob, job_id)
     if job is None:
         raise HTTPException(status_code=404, detail="Harvest job not found.")
