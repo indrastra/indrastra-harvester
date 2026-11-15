@@ -15,11 +15,11 @@ def test_source_record_upsert_is_idempotent_and_repository_scoped():
         repo = Repository(name="Test", endpoint="https://example.org/oai")
         db.add(repo)
         db.commit()
-        args = dict(
-            repository_id=repo.id, identifier="oai:test:1", datestamp="2026-01-01",
-            set_specs=["articles"], metadata_prefix="oai_dc",
-            original_xml="<record/>", deleted=False,
-        )
+        args = {
+            "repository_id": repo.id, "identifier": "oai:test:1", "datestamp": "2026-01-01",
+            "set_specs": ["articles"], "metadata_prefix": "oai_dc",
+            "original_xml": "<record/>", "deleted": False,
+        }
         assert upsert_source_record(db, **args) == "created"
         db.commit()
         assert upsert_source_record(db, **args) == "unchanged"
