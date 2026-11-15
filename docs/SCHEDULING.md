@@ -20,7 +20,7 @@ A failed or paused job does not advance `last_success_at`. Operators can resume 
 
 ## API
 
-All schedule endpoints require the administrative bearer token.
+Schedule endpoints require an admin or harvester role.
 
 | Method | Endpoint | Purpose |
 |---|---|---|
