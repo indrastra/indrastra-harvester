@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "indrastra-harvester"
-version = "0.9.0"
+version = "0.10.0"
 description = "Scholarly metadata harvesting and discovery platform"
 requires-python = ">=3.12"
 license = "AGPL-3.0-only"
@@ -22,6 +22,8 @@ dependencies = [
   "lxml>=5.3,<7.0",
   "defusedxml>=0.7.1,<1.0",
   "opensearch-py>=2.7,<3.0",
+  "argon2-cffi>=23.1,<26.0",
+  "PyJWT>=2.10,<3.0",
 ]
 
 [project.optional-dependencies]
