@@ -11,6 +11,14 @@ type Repository = {
   metadata_formats?: { metadata_prefix?: string }[];
 };
 
+type AdminUser = {
+  id: number;
+  email: string;
+  full_name: string;
+  is_active: boolean;
+  roles: string[];
+};
+
 type Schedule = {
   id: number;
   repository_id: number;
@@ -73,6 +81,13 @@ export default function AdminConsole() {
   const [jobs, setJobs] = useState<HarvestJob[]>([]);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
+  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [newUserEmail, setNewUserEmail] = useState("");
+  const [newUserName, setNewUserName] = useState("");
+  const [newUserPassword, setNewUserPassword] = useState("");
+  const [newUserRole, setNewUserRole] = useState("viewer");
   const [frequency, setFrequency] = useState("daily");
   const [name, setName] = useState("");
   const [endpoint, setEndpoint] = useState("");
@@ -86,18 +101,50 @@ export default function AdminConsole() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  async function refreshData() {
-    const [repoData, jobData, scheduleData, analyticsData] = await Promise.all([
-      requestApi<Repository[]>(token, "repositories"),
-      requestApi<HarvestJob[]>(token, "harvests?limit=50"),
-      requestApi<Schedule[]>(token, "schedules"),
-      requestApi<Analytics>(token, "analytics/summary"),
+  async function refreshData(authToken: string = token) {
+    const [repoData, jobData, scheduleData, analyticsData, userData] = await Promise.all([
+      requestApi<Repository[]>(authToken, "repositories"),
+      requestApi<HarvestJob[]>(authToken, "harvests?limit=50"),
+      requestApi<Schedule[]>(authToken, "schedules"),
+      requestApi<Analytics>(authToken, "analytics/summary"),
+      requestApi<AdminUser[]>(authToken, "auth/users"),
     ]);
     setRepositories(repoData);
     setJobs(jobData);
     setSchedules(scheduleData);
     setAnalytics(analyticsData);
+    setUsers(userData);
     if (!repositoryId && repoData.length) setRepositoryId(String(repoData[0].id));
+  }
+
+  async function signIn(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setBusy(true);
+    setError("");
+    setMessage("");
+    try {
+      const response = await fetch("/api/admin/auth/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+        cache: "no-store",
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.detail || "Sign-in failed.");
+      if (!Array.isArray(payload.roles) || !payload.roles.includes("admin")) {
+        throw new Error("The administration console requires the admin role.");
+      }
+      setToken(payload.access_token);
+      await refreshData(payload.access_token);
+      setConnected(true);
+      setPassword("");
+      setMessage("Signed in with an administrator account.");
+    } catch (cause) {
+      setConnected(false);
+      setError(cause instanceof Error ? cause.message : "Sign-in failed.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function connect(event: FormEvent<HTMLFormElement>) {
@@ -136,6 +183,46 @@ export default function AdminConsole() {
       setMessage("Repository registered. Validate the endpoint before harvesting.");
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Repository registration failed.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function createUser(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setBusy(true);
+    setError("");
+    setMessage("");
+    try {
+      await requestApi<AdminUser>(token, "auth/users", "POST", {
+        email: newUserEmail,
+        full_name: newUserName,
+        password: newUserPassword,
+        roles: [newUserRole],
+      });
+      setNewUserEmail("");
+      setNewUserName("");
+      setNewUserPassword("");
+      await refreshData();
+      setMessage("User account created.");
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "User creation failed.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function toggleUser(user: AdminUser) {
+    setBusy(true);
+    setError("");
+    try {
+      await requestApi<AdminUser>(token, "auth/users/" + user.id + "/active", "PATCH", {
+        is_active: !user.is_active,
+      });
+      await refreshData();
+      setMessage(user.is_active ? "User deactivated." : "User activated.");
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "User update failed.");
     } finally {
       setBusy(false);
     }
@@ -277,6 +364,18 @@ export default function AdminConsole() {
       </section>
 
       <section className="admin-auth-panel">
+        <form onSubmit={signIn} className="admin-token-form">
+          <div>
+            <label htmlFor="admin-email">Administrator email</label>
+            <input id="admin-email" type="email" autoComplete="username" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="admin@example.org" required />
+          </div>
+          <div>
+            <label htmlFor="admin-password">Password</label>
+            <input id="admin-password" type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} required />
+          </div>
+          <button type="submit" disabled={busy || !email || !password}>Sign in</button>
+        </form>
+        <div className="admin-auth-divider">or use the bootstrap bearer token</div>
         <form onSubmit={connect} className="admin-token-form">
           <div>
             <label htmlFor="admin-token">Administrative bearer token</label>
@@ -350,6 +449,46 @@ export default function AdminConsole() {
                 </div>
                 <button type="submit" disabled={busy || !repositories.length}>Queue harvest</button>
               </form>
+            </section>
+          </div>
+
+          <div className="admin-grid admin-users-grid">
+            <section className="admin-panel">
+              <h3>Create an operator account</h3>
+              <form className="admin-form" onSubmit={createUser}>
+                <label htmlFor="new-user-name">Full name</label>
+                <input id="new-user-name" value={newUserName} onChange={(event) => setNewUserName(event.target.value)} />
+                <label htmlFor="new-user-email">Email</label>
+                <input id="new-user-email" type="email" value={newUserEmail} onChange={(event) => setNewUserEmail(event.target.value)} required />
+                <label htmlFor="new-user-password">Temporary password (minimum 12 characters)</label>
+                <input id="new-user-password" type="password" value={newUserPassword} onChange={(event) => setNewUserPassword(event.target.value)} minLength={12} required />
+                <label htmlFor="new-user-role">Role</label>
+                <select id="new-user-role" value={newUserRole} onChange={(event) => setNewUserRole(event.target.value)}>
+                  <option value="viewer">Viewer</option>
+                  <option value="harvester">Harvester</option>
+                  <option value="admin">Administrator</option>
+                </select>
+                <button type="submit" disabled={busy}>Create user</button>
+              </form>
+            </section>
+            <section className="admin-panel">
+              <h3>User accounts</h3>
+              <div className="admin-table-wrap">
+                <table className="admin-table">
+                  <thead><tr><th>User</th><th>Roles</th><th>State</th><th>Action</th></tr></thead>
+                  <tbody>
+                    {users.map((user) => (
+                      <tr key={user.id}>
+                        <td>{user.full_name || user.email}<small>{user.email}</small></td>
+                        <td>{user.roles.join(", ")}</td>
+                        <td>{user.is_active ? "Active" : "Inactive"}</td>
+                        <td><button type="button" className="table-action" disabled={busy} onClick={() => toggleUser(user)}>{user.is_active ? "Deactivate" : "Activate"}</button></td>
+                      </tr>
+                    ))}
+                    {!users.length && <tr><td colSpan={4}>No user accounts yet.</td></tr>}
+                  </tbody>
+                </table>
+              </div>
             </section>
           </div>
 
