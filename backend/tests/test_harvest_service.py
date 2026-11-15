@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.pool import StaticPool
 
 from backend.app.db.base import Base
-from backend.app.harvest.models import SourceRecord
+from backend.app.harvest.models import SourceRecord, SourceRecordVersion
 from backend.app.harvest.service import upsert_source_record
 from backend.app.repositories.models import Repository
 
@@ -32,4 +32,10 @@ def test_source_record_upsert_is_idempotent_and_repository_scoped():
         assert record.is_deleted is True
         assert record.source_status == "deleted"
         assert record.oai_identifier == "oai:test:1"
+        versions = db.query(SourceRecordVersion).filter_by(source_record_id=record.id).order_by(
+            SourceRecordVersion.version_number
+        ).all()
+        assert [version.version_number for version in versions] == [1, 2]
+        assert versions[0].is_deleted is False
+        assert versions[1].is_deleted is True
     engine.dispose()
