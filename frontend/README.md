@@ -24,4 +24,4 @@ Open http://localhost:3000.
 
 The root Docker Compose file builds this frontend and passes HARVESTER_API_URL=http://api:8000/api/v1 for server-to-server API calls.
 
-The administration page accepts an operator-supplied bearer token in volatile page memory and forwards requests through an allowlisted same-origin Next.js route handler. The token is not persisted. See docs/ADMINISTRATION.md for the security model.
+Administrators can sign in with email/password to obtain a short-lived JWT or use the bootstrap ADMIN_API_TOKEN. Credentials remain in page memory and are forwarded through an allowlisted same-origin Next.js route handler; they are not persisted. The console also supports user creation and activation/deactivation. See docs/ADMINISTRATION.md and docs/AUTHENTICATION.md.
