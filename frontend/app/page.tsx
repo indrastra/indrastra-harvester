@@ -117,9 +117,9 @@ export default async function Home({ searchParams }: { searchParams: Promise<Sea
               <button type="submit" className="secondary-button">Apply</button>
             </form>
             <div className="export-links">
-              <Link href={exportHref(params, "csv")}>Download CSV</Link>
-              <Link href={exportHref(params, "oai_dc")}>Dublin Core XML</Link>
-              <Link href={exportHref(params, "json")}>JSON</Link>
+              <a href={exportHref(params, "csv")}>Download CSV</a>
+              <a href={exportHref(params, "oai_dc")}>Dublin Core XML</a>
+              <a href={exportHref(params, "json")}>JSON</a>
             </div>
           </div>
         </div>
