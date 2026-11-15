@@ -1,5 +1,5 @@
-import pytest
 from defusedxml.common import DefusedXmlException
+import pytest
 
 from backend.app.metadata.normalizers import normalize_metadata
 
