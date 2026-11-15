@@ -37,6 +37,10 @@ def run_harvest(self, job_id: int) -> dict[str, int | str]:
             job.status = "failed"
             job.error_message = "Repository is missing or disabled."
             job.finished_at = datetime.now(UTC)
+            if job.schedule_id is not None:
+                schedule = db.get(HarvestSchedule, job.schedule_id)
+                if schedule is not None:
+                    schedule.last_error = job.error_message
             log_job(db, job.id, job.error_message, "ERROR")
             db.commit()
             return {"job_id": job_id, "status": "failed"}
@@ -172,6 +176,10 @@ def run_harvest(self, job_id: int) -> dict[str, int | str]:
             if self.request.retries >= 3:
                 job.status = "failed"
                 job.finished_at = datetime.now(UTC)
+                if job.schedule_id is not None:
+                    schedule = db.get(HarvestSchedule, job.schedule_id)
+                    if schedule is not None:
+                        schedule.last_error = job.error_message
                 log_job(db, job.id, f"Transport retries exhausted: {exc}", "ERROR")
                 db.commit()
                 raise
