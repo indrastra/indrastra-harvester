@@ -20,7 +20,8 @@ The project collects, preserves, normalizes, indexes, and exposes scholarly meta
 7. Normalize OAI Dublin Core and DataCite metadata into a versioned canonical schema.
 8. Preserve unknown XML fields and immutable source-record versions.
 9. Index normalized records asynchronously in OpenSearch using a durable outbox.
-10. Expose public search and administrative APIs for repositories, harvest jobs, and indexing.\n11. Provide a responsive Next.js public discovery portal and record detail pages.
+10. Expose public search and administrative APIs for repositories, harvest jobs, and indexing.
+11. Provide a responsive Next.js public discovery portal and record detail pages.
 
 ## Planned platform capabilities
 
@@ -77,7 +78,8 @@ Base path: `/api/v1/repositories`
 
 | Method | Endpoint | Purpose |
 |---|---|---|
-| GET | `/api/v1/search` | Public search with filters and pagination |\n| GET | `/api/v1/records/{id}` | Public normalized record detail and provenance |
+| GET | `/api/v1/search` | Public search with filters and pagination |
+| GET | `/api/v1/records/{id}` | Public normalized record detail and provenance |
 | POST | `/api/v1/index/dispatch` | Dispatch pending indexing events (admin only) |
 
 See [Search indexing](docs/SEARCH_INDEXING.md) for query parameters, mapping, and outbox behaviour.
