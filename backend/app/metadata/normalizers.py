@@ -39,6 +39,16 @@ def _local_name(tag: str) -> str:
     return tag.rsplit("}", 1)[-1].split(":")[-1].casefold()
 
 
+def _metadata_root(root: Element) -> Element:
+    """If given a complete OAI record, normalize only its metadata payload."""
+    for node in root.iter():
+        if _local_name(node.tag) == "metadata":
+            children = list(node)
+            if children:
+                return children[0]
+    return root
+
+
 def _values(root: Element) -> dict[str, list[str]]:
     fields: dict[str, list[str]] = {}
     for node in root.iter():
@@ -91,23 +101,23 @@ DATACITE_MAPPING = {
     "language": "languages",
     "relatedidentifier": "relations",
     "rights": "rights",
-    "geoLocationPlace": "coverages",
+    "geolocationplace": "coverages",
 }
 
 
 def normalize_oai_dc(xml: str) -> NormalizedMetadata:
-    root = SafeET.fromstring(xml)
+    root = _metadata_root(SafeET.fromstring(xml))
     return _map_fields(_values(root), DC_MAPPING, "oai_dc")
 
 
 def normalize_datacite(xml: str) -> NormalizedMetadata:
-    root = SafeET.fromstring(xml)
+    root = _metadata_root(SafeET.fromstring(xml))
     return _map_fields(_values(root), DATACITE_MAPPING, "datacite")
 
 
 def normalize_generic_xml(xml: str, schema: str) -> NormalizedMetadata:
     """Retain unknown schemas as a safe local-name field map without guessing crosswalks."""
-    root = SafeET.fromstring(xml)
+    root = _metadata_root(SafeET.fromstring(xml))
     fields = _values(root)
     result = NormalizedMetadata(schema=schema or "unknown", raw_fields=fields)
     if "title" in fields:
