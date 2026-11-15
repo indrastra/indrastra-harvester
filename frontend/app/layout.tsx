@@ -25,7 +25,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             </Link>
             <nav aria-label="Main navigation">
               <Link href="/">Search</Link>
-              <a href="/docs" target="_blank" rel="noreferrer">API</a>
             </nav>
           </div>
         </header>
