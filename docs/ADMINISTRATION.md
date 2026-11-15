@@ -13,6 +13,9 @@ Administrators can sign in with email/password to obtain a short-lived JWT, or u
 The proxy allowlist includes only:
 - Repository list, registration, detail, update, disable, and endpoint validation.
 - Harvest list, create, detail, and resume.
+- Schedule list, create, enable/disable, and run-now.
+- User list, creation, activation/deactivation, and profile access.
+- Administrative analytics summary.
 - Pending indexing event dispatch.
 
 The backend remains the authority for token validation. The proxy is not a substitute for backend authorization.
