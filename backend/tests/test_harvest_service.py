@@ -4,6 +4,8 @@ from sqlalchemy.pool import StaticPool
 
 from backend.app.db.base import Base
 from backend.app.harvest.models import SourceRecord, SourceRecordVersion
+from backend.app.metadata.models import NormalizedRecord
+from backend.app.metadata.service import normalize_source_record
 from backend.app.harvest.service import upsert_source_record
 from backend.app.repositories.models import Repository
 
@@ -38,4 +40,35 @@ def test_source_record_upsert_is_idempotent_and_repository_scoped():
         assert [version.version_number for version in versions] == [1, 2]
         assert versions[0].is_deleted is False
         assert versions[1].is_deleted is True
+    engine.dispose()
+
+
+def test_normalized_projection_updates_and_respects_deletion_tombstone():
+    engine = create_engine("sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool)
+    Base.metadata.create_all(engine)
+    xml = """<record xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <header><identifier>oai:test:2</identifier></header>
+    <metadata><dc><dc:title>Research record</dc:title><dc:creator>Researcher</dc:creator></dc></metadata>
+    </record>"""
+    with Session(engine) as db:
+        repo = Repository(name="Normalization Test", endpoint="https://example.org/oai")
+        db.add(repo)
+        db.commit()
+        args = {
+            "repository_id": repo.id, "identifier": "oai:test:2", "datestamp": "2026-01-01",
+            "set_specs": [], "metadata_prefix": "oai_dc", "original_xml": xml, "deleted": False,
+        }
+        upsert_source_record(db, **args)
+        source = db.query(SourceRecord).filter_by(oai_identifier="oai:test:2").one()
+        normalized = normalize_source_record(db, source)
+        db.commit()
+        assert normalized is not None
+        assert normalized.title == ["Research record"]
+        assert normalized.creators == ["Researcher"]
+        args["original_xml"] = '<record><header status="deleted"/></record>'
+        args["deleted"] = True
+        upsert_source_record(db, **args)
+        normalize_source_record(db, source)
+        db.commit()
+        assert db.query(NormalizedRecord).one().is_deleted is True
     engine.dispose()
