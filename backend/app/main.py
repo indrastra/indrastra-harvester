@@ -4,8 +4,8 @@ from backend.app.api.harvests import router as harvests_router
 from backend.app.api.indexing import router as indexing_router
 from backend.app.api.records import router as records_router
 from backend.app.api.repositories import router as repositories_router
-from backend.app.api.search import router as search_router
 from backend.app.api.schedules import router as schedules_router
+from backend.app.api.search import router as search_router
 
 app = FastAPI(
     title="IndraStra Harvester API",
