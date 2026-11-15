@@ -223,7 +223,7 @@ export default function AdminConsole() {
               <p className="eyebrow dark">Repository management</p>
               <h2>Repositories</h2>
             </div>
-            <button className="secondary-button" type="button" disabled={busy} onClick={() => refreshData().catch((cause) => setError(cause.message))}>Refresh</button>
+            <button className="secondary-button" type="button" disabled={busy} onClick={() => refreshData().catch((cause) => setError(cause instanceof Error ? cause.message : "Refresh failed."))}>Refresh</button>
           </div>
 
           <div className="admin-grid">
