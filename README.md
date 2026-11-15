@@ -19,12 +19,12 @@ The project collects, preserves, normalizes, indexes, and exposes scholarly meta
 6. Track updates and deleted-record tombstones without physically deleting source records.
 7. Normalize OAI Dublin Core and DataCite metadata into a versioned canonical schema.
 8. Preserve unknown XML fields and immutable source-record versions.
-9. Expose administrative APIs for repositories and harvest jobs.
+9. Index normalized records asynchronously in OpenSearch using a durable outbox.\n10. Expose public search and administrative APIs for repositories, harvest jobs, and indexing.
 
 ## Planned platform capabilities
 
 - Additional metadata crosswalks (Qualified Dublin Core, MODS, MARCXML, JATS).
-- OpenSearch-backed public discovery interface.
+- Public discovery interface with full-text search and repository/type/year filters.
 - Repository and user administration with role-based access.
 - Scheduled incremental harvesting.
 - Export to JSON, CSV, XML, and Dublin Core.
@@ -72,6 +72,15 @@ Base path: `/api/v1/repositories`
 | POST | `/api/v1/repositories/{id}/validate` | Recheck OAI-PMH endpoint and capabilities |
 | DELETE | `/api/v1/repositories/{id}` | Disable repository (soft delete) |
 
+### Search and indexing
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| GET | `/api/v1/search` | Public search with filters and pagination |
+| POST | `/api/v1/index/dispatch` | Dispatch pending indexing events (admin only) |
+
+See [Search indexing](docs/SEARCH_INDEXING.md) for query parameters, mapping, and outbox behaviour.
+
 ### Harvest jobs
 
 Base path: `/api/v1/harvests`
@@ -117,7 +126,7 @@ The Compose environment is intended for local development. Review [SECURITY.md](
 
 ## Development status
 
-The repository contains the initial OAI-PMH client, repository registry, persistent harvesting engine, immutable source-record history, and initial OAI Dublin Core/DataCite normalization crosswalks. OpenSearch indexing, public discovery, full user administration, scheduled harvest policies, and production security/operational validation remain under development.
+The repository contains the initial OAI-PMH client, repository registry, persistent harvesting engine, immutable source-record history, OAI Dublin Core/DataCite normalization, and an initial OpenSearch-backed search API with durable indexing outbox. The full discovery frontend, index rebuild tooling, user administration, scheduled harvest policies, and production security/operational validation remain under development.
 
 See [Technical specification](docs/TECHNICAL_SPECIFICATION.md), [Architecture](docs/ARCHITECTURE.md), [Roadmap](docs/ROADMAP.md), [Security policy](SECURITY.md), and [Contributing guide](CONTRIBUTING.md).
 
