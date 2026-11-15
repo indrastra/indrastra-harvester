@@ -59,3 +59,21 @@ class SourceRecord(Base):
     first_harvested_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, nullable=False)
     last_harvested_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, onupdate=utc_now, nullable=False)
+
+
+
+class SourceRecordVersion(Base):
+    __tablename__ = "source_record_versions"
+    __table_args__ = (
+        UniqueConstraint("source_record_id", "version_number", name="uq_source_record_version"),
+    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    source_record_id: Mapped[int] = mapped_column(
+        ForeignKey("source_records.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    version_number: Mapped[int] = mapped_column(Integer, nullable=False)
+    datestamp: Mapped[str | None] = mapped_column(String(64))
+    metadata_prefix: Mapped[str] = mapped_column(String(128), nullable=False)
+    original_xml: Mapped[str] = mapped_column(Text, nullable=False)
+    is_deleted: Mapped[bool] = mapped_column(default=False, nullable=False)
+    captured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, nullable=False)
