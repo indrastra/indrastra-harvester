@@ -35,7 +35,7 @@ The project collects, preserves, normalizes, indexes, and exposes scholarly meta
 | Component | Technology |
 |---|---|
 | API | Python, FastAPI, Pydantic |
-| Frontend | Next.js, React, TypeScript (planned) |
+| Frontend | Next.js, React, TypeScript |
 | Database | PostgreSQL |
 | Search | OpenSearch |
 | Background jobs | Celery |
@@ -50,7 +50,7 @@ The project collects, preserves, normalizes, indexes, and exposes scholarly meta
 backend/       API, harvesting engine, metadata and tests
 migrations/    Alembic database migrations
 docs/          Technical specification, architecture and roadmap
-frontend/      Web application (planned)
+frontend/      Next.js public discovery portal
 deploy/        Deployment guidance
 .github/       CI workflows
 ```
@@ -76,7 +76,7 @@ Base path: `/api/v1/repositories`
 
 | Method | Endpoint | Purpose |
 |---|---|---|
-| GET | `/api/v1/search` | Public search with filters and pagination |
+| GET | `/api/v1/search` | Public search with filters and pagination |\n| GET | `/api/v1/records/{id}` | Public normalized record detail and provenance |
 | POST | `/api/v1/index/dispatch` | Dispatch pending indexing events (admin only) |
 
 See [Search indexing](docs/SEARCH_INDEXING.md) for query parameters, mapping, and outbox behaviour.
@@ -126,7 +126,7 @@ The Compose environment is intended for local development. Review [SECURITY.md](
 
 ## Development status
 
-The repository contains the initial OAI-PMH client, repository registry, persistent harvesting engine, immutable source-record history, OAI Dublin Core/DataCite normalization, and an initial OpenSearch-backed search API with durable indexing outbox. The full discovery frontend, index rebuild tooling, user administration, scheduled harvest policies, and production security/operational validation remain under development.
+The repository contains the OAI-PMH client, repository registry, persistent harvesting engine, immutable source-record history, OAI Dublin Core/DataCite normalization, OpenSearch-backed search API with durable indexing outbox, and an initial Next.js public discovery portal with record detail pages. Administrative UI, index rebuild tooling, user administration, scheduled harvest policies, and production security/operational validation remain under development.
 
 See [Technical specification](docs/TECHNICAL_SPECIFICATION.md), [Architecture](docs/ARCHITECTURE.md), [Roadmap](docs/ROADMAP.md), [Security policy](SECURITY.md), and [Contributing guide](CONTRIBUTING.md).
 
