@@ -155,3 +155,53 @@ def test_public_csv_export_returns_download_response(monkeypatch):
     assert "text/csv" in response.headers["content-type"]
     assert response.headers["x-exported-records"] == "0"
     assert "attachment" in response.headers["content-disposition"]
+
+
+def test_user_creation_login_jwt_and_account_deactivation(monkeypatch):
+    monkeypatch.setenv("JWT_SECRET_KEY", "test-only-jwt-signing-secret-that-is-long-enough")
+    create_response = client.post(
+        "/api/v1/auth/users",
+        headers=admin_headers(),
+        json={
+            "email": "platform-admin@example.org",
+            "full_name": "Platform Administrator",
+            "password": "Strong-Test-Password-2026",
+            "roles": ["admin"],
+        },
+    )
+    assert create_response.status_code == 201
+    user = create_response.json()
+    assert user["roles"] == ["admin"]
+
+    login = client.post(
+        "/api/v1/auth/token",
+        json={"email": "platform-admin@example.org", "password": "Strong-Test-Password-2026"},
+    )
+    assert login.status_code == 200
+    token = login.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    me = client.get("/api/v1/auth/me", headers=headers)
+    assert me.status_code == 200
+    assert me.json()["email"] == "platform-admin@example.org"
+
+    analytics = client.get("/api/v1/analytics/summary", headers=headers)
+    assert analytics.status_code == 200
+
+    deactivated = client.patch(
+        f"/api/v1/auth/users/{user['id']}/active",
+        headers=admin_headers(),
+        json={"is_active": False},
+    )
+    assert deactivated.status_code == 200
+    rejected = client.get("/api/v1/auth/me", headers=headers)
+    assert rejected.status_code == 401
+
+
+def test_user_login_rejects_wrong_password(monkeypatch):
+    monkeypatch.setenv("JWT_SECRET_KEY", "test-only-jwt-signing-secret-that-is-long-enough")
+    response = client.post(
+        "/api/v1/auth/token",
+        json={"email": "platform-admin@example.org", "password": "Wrong-Password-2026"},
+    )
+    assert response.status_code == 401
