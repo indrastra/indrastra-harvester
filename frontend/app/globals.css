@@ -145,3 +145,64 @@ nav { display: flex; gap: 26px; color: #475569; font-size: 13px; font-weight: 60
   nav { gap: 14px; }
   .sort-form { flex-wrap: wrap; }
 }
+
+
+.admin-shell { max-width: 1180px; margin: 0 auto; padding: 42px 28px 72px; }
+.admin-intro { margin-bottom: 26px; }
+.admin-intro h1 { margin: 0; font: 800 clamp(30px, 4vw, 42px)/1.15 "Manrope", sans-serif; letter-spacing: -.04em; }
+.admin-intro > p:last-child { max-width: 700px; color: var(--muted); font-size: 14px; line-height: 1.6; }
+.admin-auth-panel, .admin-panel {
+  padding: 22px; border: 1px solid var(--line); border-radius: 12px; background: #fff;
+}
+.admin-token-form { display: flex; align-items: end; gap: 12px; }
+.admin-token-form > div { flex: 1; min-width: 0; }
+.admin-token-form label, .admin-form label {
+  display: block; margin: 0 0 7px; color: #475569; font-size: 11px; font-weight: 700;
+}
+.admin-token-form input, .admin-form input, .admin-form select, .admin-form textarea {
+  width: 100%; min-width: 0; border: 1px solid var(--line); border-radius: 7px;
+  padding: 11px 12px; color: var(--ink); background: #fff; outline-color: var(--blue); font-size: 13px;
+}
+.admin-token-form button, .admin-form button {
+  min-height: 40px; border: 0; border-radius: 7px; padding: 0 17px;
+  color: #fff; background: var(--blue); font-weight: 700; cursor: pointer;
+}
+.admin-token-form button:disabled, .admin-form button:disabled, .table-action:disabled {
+  opacity: .5; cursor: not-allowed;
+}
+.admin-security-note { margin: 10px 0 0; color: var(--muted); font-size: 11px; }
+.admin-message, .admin-error { margin: 12px 0 0; font-size: 12px; }
+.admin-message { color: #047857; }
+.admin-error { color: #b91c1c; }
+.admin-section-heading { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin: 34px 0 16px; }
+.admin-section-heading h2 { margin: 0; font: 800 24px "Manrope", sans-serif; }
+.admin-section-heading.compact { margin: 0 0 16px; }
+.admin-section-heading.compact h3 { margin: 0; font: 800 16px "Manrope", sans-serif; }
+.admin-section-heading.compact p { margin: 5px 0 0; color: var(--muted); font-size: 11px; }
+.admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.admin-panel h3 { margin: 0 0 18px; font: 800 16px "Manrope", sans-serif; }
+.admin-form { display: flex; flex-direction: column; gap: 8px; }
+.admin-form label:not(:first-child) { margin-top: 7px; }
+.admin-form textarea { resize: vertical; }
+.admin-form button { margin-top: 9px; }
+.admin-date-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.admin-date-grid label { margin-top: 7px; }
+.admin-table-panel { margin-top: 18px; }
+.admin-table-wrap { width: 100%; overflow-x: auto; }
+.admin-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; }
+.admin-table th { padding: 11px 12px; color: var(--muted); background: #f8fafc; font-size: 10px; letter-spacing: .06em; text-transform: uppercase; }
+.admin-table td { padding: 13px 12px; border-top: 1px solid #edf1f6; vertical-align: middle; }
+.admin-table td small { display: block; margin-top: 4px; color: var(--muted); font-size: 10px; }
+.admin-endpoint { max-width: 290px; overflow-wrap: anywhere; color: #52647b; font-size: 11px; }
+.status-pill { display: inline-block; padding: 5px 8px; border-radius: 20px; background: #eef2f7; color: #475569; font-size: 10px; font-weight: 700; }
+.status-valid, .status-completed { background: #dcfce7; color: #166534; }
+.status-failed { background: #fee2e2; color: #991b1b; }
+.status-running, .status-processing { background: #dbeafe; color: #1d4ed8; }
+.status-queued, .status-pending, .status-paused { background: #fef3c7; color: #92400e; }
+.table-action { border: 1px solid #cbd5e1; border-radius: 6px; padding: 7px 10px; color: #1d4ed8; background: #fff; font-size: 10px; font-weight: 700; cursor: pointer; }
+@media (max-width: 760px) {
+  .admin-shell { padding: 30px 18px 50px; }
+  .admin-grid { grid-template-columns: 1fr; }
+  .admin-token-form { align-items: stretch; flex-direction: column; }
+  .admin-token-form button { min-height: 44px; }
+}
