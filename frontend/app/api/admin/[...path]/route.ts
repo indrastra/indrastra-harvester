@@ -3,6 +3,24 @@ const API_BASE = (process.env.HARVESTER_API_URL ?? "http://localhost:8000/api/v1
 type RouteContext = { params: Promise<{ path: string[] }> };
 
 function allowedPath(parts: string[], method: string): boolean {
+  if (parts.length === 2 && parts[0] === "auth" && parts[1] === "token") {
+    return method === "POST";
+  }
+  if (parts.length === 2 && parts[0] === "auth" && parts[1] === "me") {
+    return method === "GET";
+  }
+  if (parts.length === 2 && parts[0] === "auth" && parts[1] === "users") {
+    return method === "GET" || method === "POST";
+  }
+  if (
+    parts.length === 4 &&
+    parts[0] === "auth" &&
+    parts[1] === "users" &&
+    /^\\d+$/.test(parts[2]) &&
+    ["roles", "active"].includes(parts[3])
+  ) {
+    return method === "PATCH";
+  }
   if (parts.length === 2 && parts[0] === "analytics" && parts[1] === "summary") {
     return method === "GET";
   }
@@ -52,19 +70,21 @@ function allowedPath(parts: string[], method: string): boolean {
 }
 
 async function proxy(request: Request, context: RouteContext): Promise<Response> {
-  const authorization = request.headers.get("authorization") ?? "";
-  if (!authorization.startsWith("Bearer ") || authorization.length < 39) {
-    return Response.json({ detail: "A valid bearer token is required." }, { status: 401 });
-  }
-
   const { path } = await context.params;
   const method = request.method.toUpperCase();
+  const isLogin = path.length === 2 && path[0] === "auth" && path[1] === "token";
+  const authorization = request.headers.get("authorization") ?? "";
   if (!allowedPath(path, method)) {
     return Response.json({ detail: "Administrative route not allowed." }, { status: 404 });
   }
 
+  if (!isLogin && (!authorization.startsWith("Bearer ") || authorization.length < 39)) {
+    return Response.json({ detail: "A valid bearer token is required." }, { status: 401 });
+  }
+
   const target = API_BASE + "/" + path.map((part) => encodeURIComponent(part)).join("/") + new URL(request.url).search;
-  const headers = new Headers({ Authorization: authorization });
+  const headers = new Headers();
+  if (authorization.startsWith("Bearer ")) headers.set("Authorization", authorization);
   const body = method === "GET" || method === "DELETE" ? undefined : await request.text();
   if (body) headers.set("Content-Type", request.headers.get("content-type") ?? "application/json");
 
