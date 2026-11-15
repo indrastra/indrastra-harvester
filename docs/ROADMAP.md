@@ -33,12 +33,18 @@
 - Initial Next.js public search and record detail pages.
 - Facets, advanced discovery, and index rebuild tooling.
 
-## Stage 5 — Administration
-- Authentication and RBAC.
-- Repository and job dashboards.
-- Logs, metrics, exports, and audit events.
+## Stage 5 — Administration and operations
+- Shared-token operator console for repository, harvest, schedule, and indexing operations.
+- Persistent hourly/daily/weekly schedules with Celery Beat and incremental date windows.
+- Administrative collection metrics and index-outbox monitoring.
+- Individual accounts, role-based access, SSO, and audit attribution remain future work.
 
-## Stage 6 — Release hardening
+## Stage 6 — Exports and analytics
+- Public JSON, CSV, canonical XML, and OAI Dublin Core XML metadata exports.
+- Administrative operational summary for repository, record, job, schedule, and indexing status.
+- Advanced facets, trend analytics, scheduled reports, and bibliometric analytics remain future work.
+
+## Stage 7 — Release hardening
 - Security review and dependency audit.
 - Backup/restore and upgrade documentation.
 - Performance testing with representative repositories.
