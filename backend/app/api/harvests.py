@@ -40,6 +40,18 @@ def job_payload(job: HarvestJob) -> dict:
     }
 
 
+def enqueue_job(job: HarvestJob, db: Session) -> None:
+    try:
+        task = run_harvest.delay(job.id)
+        job.celery_task_id = task.id
+        db.commit()
+    except Exception as exc:
+        job.status = "failed"
+        job.error_message = f"Could not enqueue harvest task: {exc}"[:4000]
+        db.commit()
+        raise HTTPException(status_code=503, detail="Harvest queue is unavailable.") from exc
+
+
 @router.post("", status_code=status.HTTP_202_ACCEPTED)
 def create_harvest(payload: HarvestCreate, db: Session = Depends(get_db)):
     repository = db.get(Repository, payload.repository_id)
@@ -54,15 +66,7 @@ def create_harvest(payload: HarvestCreate, db: Session = Depends(get_db)):
     db.add(job)
     db.commit()
     db.refresh(job)
-    try:
-        task = run_harvest.delay(job.id)
-        job.celery_task_id = task.id
-        db.commit()
-    except Exception as exc:
-        job.status = "failed"
-        job.error_message = f"Could not enqueue harvest task: {exc}"[:4000]
-        db.commit()
-        raise HTTPException(status_code=503, detail="Harvest queue is unavailable.") from exc
+    enqueue_job(job, db)
     return job_payload(job)
 
 
@@ -86,3 +90,18 @@ def get_harvest(job_id: int, db: Session = Depends(get_db)):
         for log in db.scalars(select(HarvestJobLog).where(HarvestJobLog.job_id == job_id).order_by(HarvestJobLog.id)).all()
     ]
     return payload
+
+
+@router.post("/{job_id}/resume", status_code=status.HTTP_202_ACCEPTED)
+def resume_harvest(job_id: int, db: Session = Depends(get_db)):
+    job = db.get(HarvestJob, job_id)
+    if job is None:
+        raise HTTPException(status_code=404, detail="Harvest job not found.")
+    if job.status not in {"failed", "paused"}:
+        raise HTTPException(status_code=409, detail="Only failed or paused jobs can be resumed.")
+    job.status = "queued"
+    job.error_message = None
+    job.finished_at = None
+    db.commit()
+    enqueue_job(job, db)
+    return job_payload(job)
