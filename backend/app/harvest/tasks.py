@@ -98,7 +98,7 @@ def run_harvest(self, job_id: int) -> dict[str, int | str]:
                             SourceRecord.repository_id == repository.id,
                             SourceRecord.oai_identifier == identifier,
                         ))
-                        if source_record is not None:
+                        if source_record is not None and outcome != "unchanged":
                             normalize_source_record(db, source_record)
                         counts["seen"] += 1
                         if outcome == "created":
