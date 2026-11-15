@@ -74,7 +74,7 @@ def create_harvest(payload: HarvestCreate, db: DatabaseSession):
 
 @router.get("")
 def list_harvests(
-    db: Session = Depends(get_db),
+    db: DatabaseSession,
     offset: int = Query(0, ge=0), limit: int = Query(50, ge=1, le=200),
 ):
     jobs = db.scalars(select(HarvestJob).order_by(HarvestJob.created_at.desc()).offset(offset).limit(limit)).all()
