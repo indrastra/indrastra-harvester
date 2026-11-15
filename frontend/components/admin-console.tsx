@@ -394,8 +394,8 @@ export default function AdminConsole() {
                     <tr key={schedule.id}>
                       <td>#{schedule.id}<small>Repository #{schedule.repository_id} · {schedule.metadata_prefix}</small></td>
                       <td>{schedule.frequency}</td>
-                      <td>{new Date(schedule.next_run_at).toLocaleString()}</td>
-                      <td>{schedule.last_success_at ? new Date(schedule.last_success_at).toLocaleString() : "Not run yet"}</td>
+                      <td>{new Date(schedule.next_run_at).toLocaleString(undefined, { timeZone: "UTC" })}</td>
+                      <td>{schedule.last_success_at ? new Date(schedule.last_success_at).toLocaleString(undefined, { timeZone: "UTC" }) : "Not run yet"}</td>
                       <td><span className={"status-pill " + (schedule.enabled ? "status-valid" : "status-failed")}>{schedule.enabled ? "Enabled" : "Disabled"}</span></td>
                       <td>
                         <button type="button" className="table-action" disabled={busy || !schedule.enabled} onClick={() => runScheduleNow(schedule)}>Run now</button>
