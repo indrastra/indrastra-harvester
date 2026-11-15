@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock
 
 from fastapi.testclient import TestClient
+from redis.exceptions import RedisError
 
 from backend.app.main import app
 
@@ -43,7 +44,7 @@ def test_readiness_endpoint_when_dependencies_are_available(monkeypatch) -> None
 def test_readiness_endpoint_returns_503_when_dependency_is_unavailable(monkeypatch) -> None:
     database_context = MagicMock()
     redis_client = MagicMock()
-    redis_client.ping.side_effect = OSError("Redis unavailable")
+    redis_client.ping.side_effect = RedisError("Redis unavailable")
     search_client = MagicMock()
 
     monkeypatch.setattr("backend.app.main.SessionLocal", lambda: database_context)
