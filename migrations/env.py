@@ -16,6 +16,7 @@ from backend.app.harvest.models import (  # noqa: F401
 from backend.app.metadata.models import NormalizedRecord  # noqa: F401
 from backend.app.repositories.models import Repository  # noqa: F401
 from backend.app.search.models import IndexOutbox  # noqa: F401
+from backend.app.users.models import AuditEvent, Role, User  # noqa: F401
 
 load_dotenv()
 config = context.config
