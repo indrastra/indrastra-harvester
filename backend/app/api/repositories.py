@@ -32,7 +32,9 @@ def register_repository(payload: RepositoryCreate, db: DatabaseSession):
         raise HTTPException(status_code=422, detail=f"OAI-PMH validation failed: {exc}") from exc
 
 
-@router.get("", response_model=list[RepositoryRead])
+@router.get(
+    "", response_model=list[RepositoryRead], dependencies=[Depends(require_admin)]
+)
 def list_repositories(
     db: DatabaseSession,
     offset: int = Query(default=0, ge=0),
@@ -42,7 +44,10 @@ def list_repositories(
     return list(db.scalars(statement).all())
 
 
-@router.get("/{repository_id}", response_model=RepositoryRead)
+@router.get(
+    "/{repository_id}", response_model=RepositoryRead,
+    dependencies=[Depends(require_admin)],
+)
 def get_repository(repository_id: int, db: DatabaseSession):
     repository = db.get(Repository, repository_id)
     if repository is None:

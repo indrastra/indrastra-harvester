@@ -56,21 +56,23 @@ The repository-management API is available under `/api/v1/repositories`.
 | POST | `/api/v1/repositories/{id}/validate` | Recheck OAI-PMH endpoint and capabilities |
 | DELETE | `/api/v1/repositories/{id}` | Disable repository (soft delete) |
 
-Write operations require an HTTP bearer token configured as `ADMIN_API_TOKEN` (minimum 32 characters). If the token is not configured, administrative writes fail closed with HTTP 503. Read endpoints are currently public; role-based read permissions are planned for a later milestone.
+**All repository registry operations require an HTTP bearer token** configured as `ADMIN_API_TOKEN` (minimum 32 characters). If the token is not configured, administrative operations fail closed with HTTP 503. A full user and role management system is planned for a later milestone.
 
 ## Database setup
 
-Copy `.env.example` to `.env`, replace all development secrets, and start PostgreSQL. Apply migrations:
+Copy `.env.example` to `.env`, replace all development secrets, and start the stack:
 
 ```bash
-alembic upgrade head
+docker compose up --build -d
 ```
 
-Start the API:
+Docker Compose runs the Alembic migration service before starting the API and worker. Check the API:
 
 ```bash
-uvicorn backend.app.main:app --reload
+curl http://localhost:8000/health
 ```
+
+The local API documentation is available at `http://localhost:8000/docs`.
 
 The Docker Compose environment is intended for local development. Review `SECURITY.md` before exposing any service to a network. Application-level DNS validation must be complemented by outbound firewall or egress-proxy restrictions.
 

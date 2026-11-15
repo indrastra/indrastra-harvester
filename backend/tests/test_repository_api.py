@@ -44,6 +44,10 @@ def admin_headers():
     return {"Authorization": "Bearer test-admin-token-that-is-at-least-32-chars"}
 
 
+def test_repository_reads_require_admin_token():
+    assert client.get("/api/v1/repositories").status_code == 401
+
+
 def test_repository_write_requires_admin_token():
     response = client.post(
         "/api/v1/repositories",

@@ -43,12 +43,16 @@ def validate_public_http_endpoint(value: str) -> str:
     if host in {"localhost", "localhost.localdomain"} or host.endswith(".localhost"):
         raise ValueError("Localhost endpoints are prohibited.")
 
+    netloc_host = host
     try:
         literal = ipaddress.ip_address(host)
     except ValueError:
         try:
-            records = socket.getaddrinfo(host, port or (443 if parsed.scheme == "https" else 80),
-                                         type=socket.SOCK_STREAM)
+            records = socket.getaddrinfo(
+                host,
+                port or (443 if parsed.scheme.lower() == "https" else 80),
+                type=socket.SOCK_STREAM,
+            )
         except socket.gaierror as exc:
             raise ValueError("Endpoint hostname could not be resolved.") from exc
         addresses = {item[4][0] for item in records}
@@ -58,11 +62,12 @@ def validate_public_http_endpoint(value: str) -> str:
             _require_global_address(address)
     else:
         _require_global_address(str(literal))
+        if literal.version == 6:
+            netloc_host = f"[{host}]"
 
-    # Normalize scheme/host casing without altering path, query or port.
-    netloc = host
+    netloc = netloc_host
     if port is not None:
-        netloc = f"{host}:{port}"
+        netloc = f"{netloc_host}:{port}"
     return urlunsplit((parsed.scheme.lower(), netloc, parsed.path or "/", parsed.query, ""))
 
 

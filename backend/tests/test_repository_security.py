@@ -28,6 +28,12 @@ def test_accepts_public_literal_ip():
     assert validate_public_http_endpoint("https://1.1.1.1/oai") == "https://1.1.1.1/oai"
 
 
+def test_accepts_public_ipv6_and_preserves_brackets():
+    assert validate_public_http_endpoint(
+        "https://[2606:4700:4700::1111]/oai"
+    ) == "https://[2606:4700:4700::1111]/oai"
+
+
 def test_rejects_fragment():
     with pytest.raises(ValueError, match="fragments"):
         validate_public_http_endpoint("https://example.org/oai#fragment")
