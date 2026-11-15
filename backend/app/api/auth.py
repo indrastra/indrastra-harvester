@@ -11,6 +11,8 @@ from backend.app.db.session import get_db
 from backend.app.users.models import AuditEvent, Role, User
 from backend.app.users.security import create_access_token, hash_password, verify_password
 
+DUMMY_PASSWORD_HASH = hash_password("indrastra-dummy-login-password")
+
 router = APIRouter(prefix="/auth", tags=["authentication"])
 DatabaseSession = Annotated[Session, Depends(get_db)]
 
@@ -74,6 +76,7 @@ def issue_token(payload: LoginRequest, db: DatabaseSession):
     user = db.scalar(select(User).where(func.lower(User.email) == payload.email.strip().lower()))
     now = datetime.now(UTC)
     if user is None:
+        verify_password(payload.password, DUMMY_PASSWORD_HASH)
         raise HTTPException(status_code=401, detail="Invalid email or password.")
     if user.locked_until is not None and user.locked_until > now:
         raise HTTPException(status_code=429, detail="Login temporarily locked. Try again later.")
