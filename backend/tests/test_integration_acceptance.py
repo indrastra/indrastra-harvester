@@ -156,14 +156,14 @@ def test_integrated_harvest_normalize_index_search_and_public_record(monkeypatch
                 db.execute(delete(SourceRecord).where(SourceRecord.id.in_(source_ids)))
             db.execute(delete(HarvestJob).where(HarvestJob.id == job_id))
             db.execute(delete(Repository).where(Repository.id == repository_id))
+
+        cleanup_client = get_opensearch_client()
         try:
-            client = get_opensearch_client()
-            client.delete_by_query(
+            cleanup_client.delete_by_query(
                 index=INDEX_NAME,
                 body={"query": {"term": {"oai_identifier": "oai:integration:record-001"}}},
                 ignore=[404],
                 refresh=True,
             )
-            client.close()
-        except Exception:
-            pass
+        finally:
+            cleanup_client.close()
