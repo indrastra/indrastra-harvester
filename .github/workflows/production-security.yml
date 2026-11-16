@@ -1,0 +1,73 @@
+name: Production security
+
+on:
+  pull_request:
+  push:
+    branches: [main, develop]
+  schedule:
+    - cron: "41 4 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-security-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  secret-scan:
+    name: Secret and credential scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Scan repository history for exposed secrets
+        run: |
+          set +e
+          docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:v8.24.2 \
+            detect --source=/repo --redact --no-banner --report-format json \
+            --report-path /repo/gitleaks-report.json --exit-code=1
+          scan_status=$?
+          if [ -f gitleaks-report.json ]; then
+            jq -r '.[] | "Finding: rule=" + .RuleID + " file=" + .File + " line=" + (.StartLine|tostring) + " commit=" + .Commit' gitleaks-report.json
+          fi
+          exit "$scan_status"
+
+  filesystem-scan:
+    name: Filesystem vulnerability and secret scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan source dependencies and secrets
+        run: |
+          docker run --rm -v "$PWD:/work" aquasec/trivy:0.59.1 fs \
+            --scanners vuln,secret --ignore-unfixed --severity HIGH,CRITICAL \
+            --exit-code 1 /work
+  container-scan:
+    name: Container image scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build backend image
+        run: docker build --pull -t indrastra-harvester-api:security .
+      - name: Build frontend image
+        run: docker build --pull -t indrastra-harvester-frontend:security ./frontend
+      - name: Scan backend image
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            -v "$HOME/.cache/trivy:/root/.cache/" aquasec/trivy:0.59.1 image \
+            --vuln-type os --ignore-unfixed --severity HIGH,CRITICAL --exit-code 1 \
+            indrastra-harvester-api:security
+      - name: Scan frontend image
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            -v "$HOME/.cache/trivy:/root/.cache/" aquasec/trivy:0.59.1 image \
+            --ignore-unfixed --severity HIGH,CRITICAL --exit-code 1 \
+            indrastra-harvester-frontend:security

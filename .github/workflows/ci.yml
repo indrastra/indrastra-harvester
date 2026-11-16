@@ -1,5 +1,12 @@
 name: CI
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     branches: [main, develop]
@@ -41,6 +48,10 @@ jobs:
         run: ruff check backend
       - name: Test
         run: pytest
+      - name: Audit Python dependencies
+        run: |
+          python -m pip install pip-audit
+          pip-audit --skip-editable
 
   integration:
     runs-on: ubuntu-latest
@@ -88,7 +99,7 @@ jobs:
       CELERY_RESULT_BACKEND: redis://localhost:6379/2
       OPENSEARCH_URL: http://localhost:9200
       JWT_SECRET_KEY: integration-test-signing-secret-at-least-32-chars
-      ADMIN_API_TOKEN: integration-test-admin-token-at-least-32-chars
+      ADMIN_API_TOKEN: ci-test-token-ci-test-token-ci-test-token
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -117,6 +128,8 @@ jobs:
           node-version: "22"
       - name: Install dependencies
         run: npm install
+      - name: Audit frontend dependencies
+        run: npm audit --audit-level=moderate
       - name: Build
         run: npm run build
 
