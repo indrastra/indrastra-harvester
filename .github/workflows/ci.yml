@@ -8,6 +8,22 @@ on:
 jobs:
   backend:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: harvester
+          POSTGRES_USER: harvester
+          POSTGRES_PASSWORD: test-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U harvester -d harvester"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql+psycopg://harvester:test-password@localhost:5432/harvester
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -19,6 +35,8 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
           pip install httpx
+      - name: Verify database migrations
+        run: alembic upgrade head
       - name: Lint
         run: ruff check backend
       - name: Test
@@ -38,3 +56,16 @@ jobs:
         run: npm install
       - name: Build
         run: npm run build
+
+  containers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate Compose configuration
+        run: |
+          cp .env.example .env
+          docker compose config --quiet
+      - name: Build backend image
+        run: docker build -t indrastra-harvester-api:ci .
+      - name: Build frontend image
+        run: docker build -t indrastra-harvester-frontend:ci ./frontend
