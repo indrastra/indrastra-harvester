@@ -7,9 +7,9 @@ Milestone 13 reduces avoidable software-supply-chain and deployment risk. Passin
 
 ## Delivered in this change set
 
-- Dependency review on pull requests; new dependencies with high or critical known vulnerabilities fail the review.
+- Python and frontend dependency audits in the normal CI pipeline.
 - Repository-history secret scanning with redacted findings.
-- Filesystem scanning for vulnerabilities, insecure configuration, and secrets.
+- Filesystem scanning for known vulnerabilities and exposed secrets.
 - Backend and frontend container image vulnerability scanning.
 - Weekly scheduled security scans and manual workflow dispatch.
 - Explicit least-privilege workflow permissions and concurrency cancellation.
@@ -18,7 +18,7 @@ Milestone 13 reduces avoidable software-supply-chain and deployment risk. Passin
 
 ## Acceptance criteria
 
-- [ ] Dependency review completes on pull requests.
+- [ ] Native GitHub dependency review is enabled if the repository dependency graph is available; Python and frontend audits remain mandatory regardless.
 - [ ] Secret scan completes without exposed credentials.
 - [ ] Filesystem scan completes without unresolved high/critical findings.
 - [ ] Backend and frontend images build and scan without unresolved high/critical findings.
@@ -46,7 +46,7 @@ The following require additional implementation, operator decisions, or access t
 
 ## Security exception register
 
-No scanner exceptions are approved by this document. Record any future exception in a dedicated reviewed change with:
+No scanner exceptions are approved by this document. The native GitHub dependency-review action is not enabled because the repository dependency graph is currently unavailable; CI uses `pip-audit` and `npm audit` until that repository feature is enabled. Record any future exception in a dedicated reviewed change with:
 - finding identifier and affected component;
 - severity and exploitability assessment;
 - owner and approver;
