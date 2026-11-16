@@ -40,10 +40,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      security-events: write
     steps:
       - uses: actions/checkout@v4
-      - name: Scan source, dependencies, secrets and IaC
+      - name: Scan source dependencies and secrets
         run: |
           docker run --rm -v "$PWD:/work" aquasec/trivy:0.59.1 fs \
             --scanners vuln,secret --ignore-unfixed --severity HIGH,CRITICAL \
