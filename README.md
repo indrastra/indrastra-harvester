@@ -27,6 +27,7 @@ The project collects, preserves, normalizes, indexes, and exposes scholarly meta
 14. Export normalized metadata as JSON, CSV, XML, and Dublin Core XML.
 15. Provide administrative collection and indexing analytics.
 16. Support JWT authentication, Argon2 password hashing, audit events, and admin/harvester/viewer roles.
+17. Provide readiness checks, non-root containers, database backup/restore scripts, and security headers.
 
 ## Planned platform capabilities
 
@@ -101,6 +102,10 @@ Base path: `/api/v1/repositories`
 
 See [Search indexing](docs/SEARCH_INDEXING.md) for query parameters, mapping, and outbox behaviour.
 
+### Audit events
+
+Administrators can inspect recent authentication and user-administration events through `GET /api/v1/audit-events`.
+
 ### Exports and analytics
 
 Public exports are available at `/api/v1/exports` in JSON, CSV, XML, and OAI Dublin Core XML formats. Administrative analytics are available at `/api/v1/analytics/summary`. See [Exports and analytics](docs/EXPORTS_ANALYTICS.md).
@@ -156,7 +161,7 @@ The Compose environment is intended for local development. Review [SECURITY.md](
 
 The repository contains the OAI-PMH client, repository registry, persistent harvesting engine, immutable source-record history, OAI Dublin Core/DataCite normalization, OpenSearch-backed search API with durable indexing outbox, and a Next.js public discovery portal with record detail pages. MFA, SSO, password reset, fine-grained resource permissions, index rebuild tooling, advanced schedule calendars, richer analytics, and production security/operational validation remain under development.
 
-See [Technical specification](docs/TECHNICAL_SPECIFICATION.md), [Architecture](docs/ARCHITECTURE.md), [Roadmap](docs/ROADMAP.md), [Search indexing](docs/SEARCH_INDEXING.md), [Frontend](docs/FRONTEND.md), [Administration](docs/ADMINISTRATION.md), [Authentication and RBAC](docs/AUTHENTICATION.md), [Security policy](SECURITY.md), and [Contributing guide](CONTRIBUTING.md).
+See [Technical specification](docs/TECHNICAL_SPECIFICATION.md), [Architecture](docs/ARCHITECTURE.md), [Roadmap](docs/ROADMAP.md), [Search indexing](docs/SEARCH_INDEXING.md), [Frontend](docs/FRONTEND.md), [Administration](docs/ADMINISTRATION.md), [Authentication and RBAC](docs/AUTHENTICATION.md), [Deployment](docs/DEPLOYMENT.md), [Security policy](SECURITY.md), and [Contributing guide](CONTRIBUTING.md).
 
 ## License
 
