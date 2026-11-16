@@ -9,6 +9,8 @@ Milestone 13 reduces avoidable software-supply-chain and deployment risk. Passin
 
 - Python and frontend dependency audits in the normal CI pipeline.
 - Pin the frontend's vulnerable transitive PostCSS dependency to a patched 8.5.x release line.
+- Upgrade pytest to a security-fixed release and require patched setuptools for builds.
+- Upgrade backend base-image OS packages during image construction to pick up security fixes.
 - Repository-history secret scanning with redacted findings.
 - Filesystem scanning for known vulnerabilities and exposed secrets.
 - Backend and frontend container image vulnerability scanning.
