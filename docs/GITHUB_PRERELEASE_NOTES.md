@@ -1,8 +1,11 @@
 # IndraStra Harvester v0.1.0-rc.1
 
-**Release type:** GitHub pre-release  
-**Status:** Prepared for publication; Git tag and GitHub release have not yet been created  
-**Candidate source commit:** `bdf0547404a5c271d5e0b90d8b6a8c33c280d48e`  
+**Release type:** Published GitHub pre-release  
+**Status:** Published on 2026-11-16; live staging deployment and operational acceptance remain pending  
+**Application baseline commit:** `bdf0547404a5c271d5e0b90d8b6a8c33c280d48e`  
+**Published release commit:** `1e15da42b3fd19913c5ae23d43adb08cb5dc2c99`  
+**Git tag:** `v0.1.0-rc.1`  
+**GitHub release:** https://github.com/indrastra/indrastra-harvester/releases/tag/v0.1.0-rc.1  
 **License:** GNU Affero General Public License v3.0 (AGPL-3.0)
 
 ## Release summary
@@ -41,6 +44,12 @@ PR #30 added the staging deployment and operational acceptance runbook. Its CI a
 - CodeQL run #33: https://github.com/indrastra/indrastra-harvester/actions/runs/43801346321
 - PR #30: https://github.com/indrastra/indrastra-harvester/pull/30
 
+PR #31 added the GitHub pre-release notes and passed its CI and CodeQL checks:
+
+- CI run #88: https://github.com/indrastra/indrastra-harvester/actions/runs/43802240591
+- CodeQL run #35: https://github.com/indrastra/indrastra-harvester/actions/runs/43802240555
+- PR #31: https://github.com/indrastra/indrastra-harvester/pull/31
+
 These PR checks are evidence for the tested pull-request revisions. They are not evidence of a live deployment, external-repository interoperability at scale, production network enforcement, production performance, or disaster recovery in a live environment.
 
 ## Installation and evaluation
@@ -64,13 +73,18 @@ The default Compose configuration is for development/evaluation. In particular, 
 
 ## Release classification
 
-Publish as a **GitHub Pre-release** for controlled evaluation and feedback. Do not mark it as the latest stable release or describe it as production-ready.
+**Published GitHub Pre-release — evaluation only; not production-ready or production-certified.**
 
-## Maintainer checklist before publication
+The release is available for controlled evaluation and feedback. It is not marked as a stable production release.
 
-- [ ] Merge this release-notes change.
-- [ ] Confirm the final `main` commit and all required checks.
-- [ ] Create the Git tag `v0.1.0-rc.1` at the approved release commit.
-- [ ] Create a GitHub release using this document as the release description.
-- [ ] Mark the release as a pre-release (not a stable release).
-- [ ] Verify the source archives and release page.
+## Publication record
+
+- [x] Release notes merged into the repository.
+- [x] Git tag `v0.1.0-rc.1` created at `1e15da42b3fd19913c5ae23d43adb08cb5dc2c99`.
+- [x] GitHub release published.
+- [x] Release marked as a pre-release.
+- [x] Release metadata and tag target verified against the `main` commit.
+- [ ] Deploy to an isolated staging environment.
+- [ ] Complete the Milestone 12 staging acceptance runbook in `docs/STAGING_ACCEPTANCE.md`.
+- [ ] Record operator evidence, unresolved findings, and the go/no-go decision.
+- [ ] Complete production security, performance, backup/restore, and operational reviews before any stable release.
