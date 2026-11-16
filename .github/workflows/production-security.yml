@@ -20,7 +20,7 @@ jobs:
     name: Secret and credential scan
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Scan repository history for exposed secrets
@@ -41,7 +41,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Scan source dependencies and secrets
         run: |
           docker run --rm -v "$PWD:/work" aquasec/trivy:0.59.1 fs \
@@ -54,7 +54,7 @@ jobs:
       contents: read
       security-events: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Build backend image
         run: docker build --pull -t indrastra-harvester-api:security .
       - name: Build frontend image

@@ -32,7 +32,7 @@ jobs:
     env:
       DATABASE_URL: postgresql+psycopg://harvester:test-password@localhost:5432/harvester
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -101,7 +101,7 @@ jobs:
       JWT_SECRET_KEY: integration-test-signing-secret-at-least-32-chars
       ADMIN_API_TOKEN: ci-test-token-ci-test-token-ci-test-token
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -122,7 +122,7 @@ jobs:
       run:
         working-directory: frontend
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
@@ -136,7 +136,7 @@ jobs:
   containers:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Validate Compose configuration
         run: |
           cp .env.example .env
