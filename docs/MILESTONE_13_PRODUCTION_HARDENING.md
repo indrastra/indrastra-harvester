@@ -8,12 +8,12 @@ Milestone 13 reduces avoidable software-supply-chain and deployment risk. Passin
 ## Delivered in this change set
 
 - Python and frontend dependency audits in the normal CI pipeline.
+- Pin the frontend's vulnerable transitive PostCSS dependency to a patched 8.5.x release line.
 - Repository-history secret scanning with redacted findings.
 - Filesystem scanning for known vulnerabilities and exposed secrets.
 - Backend and frontend container image vulnerability scanning.
 - Weekly scheduled security scans and manual workflow dispatch.
 - Explicit least-privilege workflow permissions and concurrency cancellation.
-- Python and JavaScript dependency audit steps in the normal CI pipeline.
 - This milestone record, including remaining gates and evidence expectations.
 
 ## Acceptance criteria
@@ -33,16 +33,17 @@ A scanner failure must not be converted into a pass by silently suppressing find
 
 The following require additional implementation, operator decisions, or access to deployment infrastructure:
 
-1. Replace mutable container tags with reviewed immutable digests for deployment.
-2. Generate and publish an SBOM for each release; retain provenance and build attestations.
-3. Sign release artifacts/images and verify signatures before deployment.
-4. Enforce production OpenSearch TLS/authentication and least-privilege roles.
-5. Enforce network egress restrictions outside the application to mitigate SSRF and DNS rebinding.
-6. Implement MFA/SSO, password recovery, refresh-token rotation, revocation, and finer-grained authorization.
-7. Establish encrypted off-host backup retention and recurring isolated restore tests.
-8. Add service-level monitoring, alert routing, log retention, and incident response ownership.
-9. Complete load, resilience, penetration, accessibility, and multi-tenant isolation testing.
-10. Complete Milestone 12 staging acceptance and record evidence before any production approval.
+1. Commit and maintain deterministic frontend and backend dependency lockfiles.
+2. Replace mutable container tags with reviewed immutable digests for deployment.
+3. Generate and publish an SBOM for each release; retain provenance and build attestations.
+4. Sign release artifacts/images and verify signatures before deployment.
+5. Enforce production OpenSearch TLS/authentication and least-privilege roles.
+6. Enforce network egress restrictions outside the application to mitigate SSRF and DNS rebinding.
+7. Implement MFA/SSO, password recovery, refresh-token rotation, revocation, and finer-grained authorization.
+8. Establish encrypted off-host backup retention and recurring isolated restore tests.
+9. Add service-level monitoring, alert routing, log retention, and incident response ownership.
+10. Complete load, resilience, penetration, accessibility, and multi-tenant isolation testing.
+11. Complete Milestone 12 staging acceptance and record evidence before any production approval.
 
 ## Security exception register
 
