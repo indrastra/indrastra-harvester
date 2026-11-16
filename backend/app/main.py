@@ -4,13 +4,14 @@ import time
 import uuid
 
 from fastapi import FastAPI, HTTPException, Request
-from opensearchpy.exceptions import OpenSearchException
+from opensearchpy.exceptions import TransportError
 from redis import Redis
 from redis.exceptions import RedisError
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
 from backend.app.api.analytics import router as analytics_router
+from backend.app.api.audit_events import router as audit_events_router
 from backend.app.api.auth import router as auth_router
 from backend.app.api.exports import router as exports_router
 from backend.app.api.harvests import router as harvests_router
@@ -33,6 +34,7 @@ app.include_router(repositories_router, prefix="/api/v1")
 app.include_router(exports_router, prefix="/api/v1")
 app.include_router(analytics_router, prefix="/api/v1")
 app.include_router(auth_router, prefix="/api/v1")
+app.include_router(audit_events_router, prefix="/api/v1")
 app.include_router(harvests_router, prefix="/api/v1")
 app.include_router(schedules_router, prefix="/api/v1")
 app.include_router(search_router, prefix="/api/v1")
@@ -91,7 +93,7 @@ def readiness() -> dict[str, object]:
         )
         redis_client.ping()
         checks["redis"] = "ok"
-    except (RedisError, OSError, ValueError):
+    except RedisError:
         checks["redis"] = "unavailable"
     finally:
         if redis_client is not None:
@@ -102,7 +104,7 @@ def readiness() -> dict[str, object]:
         search_client = get_opensearch_client()
         search_client.cluster.health(request_timeout=3)
         checks["opensearch"] = "ok"
-    except (OpenSearchException, OSError, ValueError):
+    except (TransportError, ValueError):
         checks["opensearch"] = "unavailable"
     finally:
         if search_client is not None:

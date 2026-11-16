@@ -239,3 +239,20 @@ def test_harvester_role_can_manage_harvests_but_not_repositories(monkeypatch):
     headers = {"Authorization": f"Bearer {login.json()['access_token']}"}
     assert client.get("/api/v1/harvests", headers=headers).status_code == 200
     assert client.get("/api/v1/repositories", headers=headers).status_code == 403
+
+
+def test_audit_event_api_is_admin_protected():
+    unauthorized = client.get("/api/v1/audit-events")
+    assert unauthorized.status_code == 401
+    response = client.get("/api/v1/audit-events", headers=admin_headers())
+    assert response.status_code == 200
+    assert isinstance(response.json(), list)
+
+
+def test_health_endpoint_includes_request_id_and_security_headers():
+    response = client.get("/health")
+    assert response.status_code == 200
+    assert response.headers.get("x-request-id")
+    assert response.headers["x-content-type-options"] == "nosniff"
+    assert response.headers["x-frame-options"] == "DENY"
+    assert response.headers["referrer-policy"] == "strict-origin-when-cross-origin"

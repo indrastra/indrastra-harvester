@@ -16,6 +16,7 @@ The proxy allowlist includes only:
 - Schedule list, create, enable/disable, and run-now.
 - User list, creation, activation/deactivation, and profile access.
 - Administrative analytics summary.
+- Audit event listing.
 - Pending indexing event dispatch.
 
 The backend remains the authority for token validation. The proxy is not a substitute for backend authorization.

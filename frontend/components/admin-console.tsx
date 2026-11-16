@@ -11,6 +11,16 @@ type Repository = {
   metadata_formats?: { metadata_prefix?: string }[];
 };
 
+type AuditEvent = {
+  id: number;
+  actor_user_id?: number | null;
+  action: string;
+  entity_type: string;
+  entity_id?: string | null;
+  details: Record<string, unknown>;
+  created_at: string;
+};
+
 type AdminUser = {
   id: number;
   email: string;
@@ -82,6 +92,7 @@ export default function AdminConsole() {
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [users, setUsers] = useState<AdminUser[]>([]);
+  const [auditEvents, setAuditEvents] = useState<AuditEvent[]>([]);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [newUserEmail, setNewUserEmail] = useState("");
@@ -102,18 +113,20 @@ export default function AdminConsole() {
   const [error, setError] = useState("");
 
   async function refreshData(authToken: string = token) {
-    const [repoData, jobData, scheduleData, analyticsData, userData] = await Promise.all([
+    const [repoData, jobData, scheduleData, analyticsData, userData, auditData] = await Promise.all([
       requestApi<Repository[]>(authToken, "repositories"),
       requestApi<HarvestJob[]>(authToken, "harvests?limit=50"),
       requestApi<Schedule[]>(authToken, "schedules"),
       requestApi<Analytics>(authToken, "analytics/summary"),
       requestApi<AdminUser[]>(authToken, "auth/users"),
+      requestApi<AuditEvent[]>(authToken, "audit-events?limit=50"),
     ]);
     setRepositories(repoData);
     setJobs(jobData);
     setSchedules(scheduleData);
     setAnalytics(analyticsData);
     setUsers(userData);
+    setAuditEvents(auditData);
     if (!repositoryId && repoData.length) setRepositoryId(String(repoData[0].id));
   }
 
@@ -563,6 +576,29 @@ export default function AdminConsole() {
                     </tr>
                   ))}
                   {!schedules.length && <tr><td colSpan={6}>No recurring schedules created.</td></tr>}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section className="admin-panel admin-table-panel">
+            <div className="admin-section-heading compact">
+              <div><h3>Recent audit events</h3><p>Latest 50 administrative events</p></div>
+            </div>
+            <div className="admin-table-wrap">
+              <table className="admin-table">
+                <thead><tr><th>Time (UTC)</th><th>Actor</th><th>Action</th><th>Entity</th><th>Details</th></tr></thead>
+                <tbody>
+                  {auditEvents.map((event) => (
+                    <tr key={event.id}>
+                      <td>{new Date(event.created_at).toLocaleString(undefined, { timeZone: "UTC" })}</td>
+                      <td>{event.actor_user_id ?? "Bootstrap token"}</td>
+                      <td>{event.action}</td>
+                      <td>{event.entity_type} {event.entity_id || ""}</td>
+                      <td className="admin-endpoint">{JSON.stringify(event.details)}</td>
+                    </tr>
+                  ))}
+                  {!auditEvents.length && <tr><td colSpan={5}>No audit events recorded.</td></tr>}
                 </tbody>
               </table>
             </div>
