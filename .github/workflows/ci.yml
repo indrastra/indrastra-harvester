@@ -99,7 +99,7 @@ jobs:
       CELERY_RESULT_BACKEND: redis://localhost:6379/2
       OPENSEARCH_URL: http://localhost:9200
       JWT_SECRET_KEY: integration-test-signing-secret-at-least-32-chars
-      ADMIN_API_TOKEN: integration-test-admin-token-at-least-32-chars
+      ADMIN_API_TOKEN: ci-test-token-ci-test-token-ci-test-token
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
