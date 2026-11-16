@@ -15,6 +15,7 @@ RUN apt-get update && apt-get upgrade -y \
     && rm -rf /var/lib/apt/lists/* \
     && python -m pip install --upgrade pip "setuptools>=78.1.1" \
     && find /usr/local/lib/python3.12/ensurepip/_bundled -type f -name "setuptools-*.whl" -delete \
+    && find /usr/local/lib/python3.12 -iname "setuptools-70.3.0*" -exec rm -rf {} + \
     && python -c "import setuptools; assert tuple(map(int, setuptools.__version__.split('.')[:3])) >= (78, 1, 1)" \
     && pip install . \
     && groupadd --system appuser \
