@@ -1,0 +1,4 @@
+[allowlist]
+description = "Known non-secret CI-only test fixture; it is fixed, has no privileges outside ephemeral tests, and is not a credential."
+paths = ['''\.github/workflows/ci\.yml''']
+regexes = ['''integration-test-admin-token-at-least-32-chars''']
