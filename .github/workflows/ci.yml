@@ -33,7 +33,7 @@ jobs:
       DATABASE_URL: postgresql+psycopg://harvester:test-password@localhost:5432/harvester
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
           cache: pip
@@ -102,7 +102,7 @@ jobs:
       ADMIN_API_TOKEN: ci-test-token-ci-test-token-ci-test-token
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
           cache: pip
