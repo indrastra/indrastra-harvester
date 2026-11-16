@@ -21,6 +21,9 @@ function allowedPath(parts: string[], method: string): boolean {
   ) {
     return method === "PATCH";
   }
+  if (parts.length === 1 && parts[0] === "audit-events") {
+    return method === "GET";
+  }
   if (parts.length === 2 && parts[0] === "analytics" && parts[1] === "summary") {
     return method === "GET";
   }
