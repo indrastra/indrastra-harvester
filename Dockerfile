@@ -10,7 +10,9 @@ COPY pyproject.toml README.md alembic.ini ./
 COPY backend ./backend
 COPY migrations ./migrations
 
-RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/* \
+RUN apt-get update && apt-get upgrade -y \
+    && apt-get purge -y python3-setuptools \
+    && rm -rf /var/lib/apt/lists/* \
     && python -m pip install --upgrade pip "setuptools>=78.1.1" \
     && pip install . \
     && groupadd --system appuser \
