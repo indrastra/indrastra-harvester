@@ -10,7 +10,9 @@ COPY pyproject.toml README.md alembic.ini ./
 COPY backend ./backend
 COPY migrations ./migrations
 
-RUN pip install --upgrade pip && pip install . \
+RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/* \
+    && python -m pip install --upgrade pip "setuptools>=78.1.1" \
+    && pip install . \
     && groupadd --system appuser \
     && useradd --system --gid appuser --home-dir /app appuser \
     && chown -R appuser:appuser /app
